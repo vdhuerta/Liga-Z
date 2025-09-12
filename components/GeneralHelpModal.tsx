@@ -72,6 +72,13 @@ const DepositCalibratorIcon: React.FC = () => (
     </div>
 );
 
+const AssemblerIcon: React.FC = () => (
+    <div className="w-10 h-10 inline-block mr-2 p-0.5 bg-sky-700 flex-shrink-0">
+       <div className="w-full h-full bg-black bg-opacity-50 rounded-sm border-2 border-green-400" />
+   </div>
+);
+
+
 const EmitterIcon: React.FC = () => (
     <svg viewBox="0 0 64 64" className="w-10 h-10 inline-block mr-2 flex-shrink-0">
         <path d="M 12,32 C 12,12 52,12 52,32 S 42,52 32,52 S 12,52 12,32 Z" fill="#8b2f0a" stroke="#4a2c2a" strokeWidth="2.5" />
@@ -160,7 +167,7 @@ const GeneralHelpModal: React.FC<GeneralHelpModalProps> = ({ onClose }) => {
                         <HelpEntry><ComparisonIcon /><div><strong className="text-yellow-300">Estaciones de Comparación:</strong> Coloca dos cubos para cumplir la condición matemática (<strong className="text-yellow-300">&gt;</strong>, <strong className="text-yellow-300">&lt;</strong>, <strong className="text-yellow-300">=</strong>) y abrir puertas.</div></HelpEntry>
                         <HelpEntry><ScannerPlateIcon /><div><strong className="text-blue-400">Placa de Escáner:</strong> Revela temporalmente el valor de un Cubo de Memoria que esté sobre ella.</div></HelpEntry>
                         <HelpEntry><DepositCalibratorIcon /><div><strong className="text-purple-400">Depósitos y Calibradores:</strong> Zonas donde la <strong className="text-yellow-300">suma total</strong> de los cubos debe cumplir un objetivo (ej: <strong className="text-yellow-300">= 4</strong>) o una condición lógica (ej: <strong className="text-yellow-300">&gt; -2</strong>).</div></HelpEntry>
-                        <p className="mt-4"><strong className="text-lg text-purple-300">El Ensamblador:</strong> En el desafío final, encontrarás un gran panel donde debes colocar cubos para satisfacer <strong className="text-yellow-300">múltiples condiciones a la vez</strong> (suma de filas, columnas, total, etc.).</p>
+                        <HelpEntry><AssemblerIcon /><div><strong className="text-green-400">El Ensamblador:</strong> En el desafío final, encontrarás un gran panel donde debes colocar cubos para satisfacer <strong className="text-yellow-300">múltiples condiciones a la vez</strong> (suma de filas, columnas, total de cubos, etc.).</div></HelpEntry>
                     </HelpSection>
 
                     <HelpSection title="Peligros y Coleccionables">
@@ -169,7 +176,10 @@ const GeneralHelpModal: React.FC<GeneralHelpModalProps> = ({ onClose }) => {
                         <HelpEntry><div className="w-10 h-10 inline-block mr-2 flex-shrink-0"><TrophyIcon /></div><div><strong className="text-yellow-300">Trofeos:</strong> ¡Recógelos para ganar puntos extra! A menudo se encuentran en cámaras secretas.</div></HelpEntry>
                     </HelpSection>
                 </div>
-                 <div className="text-center mt-6">
+                 <p className="text-center text-[10px] text-gray-400 mt-4">
+                    Creado por Victor Huerta © 2025
+                 </p>
+                 <div className="text-center mt-2">
                     <button
                         onClick={handleClose}
                         className="font-arcade text-lg bg-purple-600 text-white py-2 px-6 rounded-lg border-b-4 border-purple-800 hover:bg-purple-500 active:border-b-0 active:translate-y-1 transition-all"
