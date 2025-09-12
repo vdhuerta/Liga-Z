@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import GameBoard from './components/GameBoard';
 import Modal from './components/Modal';
@@ -13,7 +14,8 @@ import LavaBurstEffect from './components/LavaBurstEffect';
 import EpisodeWelcomeModal from './components/EpisodeWelcomeModal';
 import GameOverModal from './components/GameOverModal';
 import FinalScene from './components/FinalScene';
-import { TILE_SIZE, LEVEL_SOLUTIONS } from './constants';
+import TouchControls from './components/TouchControls';
+import { calculateTileSize, LEVEL_SOLUTIONS, VIEWPORT_HEIGHT_TILES, VIEWPORT_WIDTH_TILES } from './constants';
 import { LEVELS } from './levels';
 import { EPISODES, getNextLevelIndex } from './episode-data';
 import type { Position, Cube, Prize, Key, Direction, LevelData, EvaporationEffectData, InteractiveRock, Fireball, HeartbreakEffectData, AssemblerGoal } from './types';
@@ -56,6 +58,8 @@ const StatusBar: React.FC<{ lives: number; score: number; levelTitle: string; on
 
 type GameState = 'playing' | 'won' | 'gameOver';
 type Scene = 'videoIntro' | 'welcome' | 'start' | 'intro' | 'iceCavern' | 'game' | 'finalScene';
+
+const isTouchDevice = () => 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
 const App: React.FC = () => {
   const [currentScene, setCurrentScene] = useState<Scene>('welcome');
@@ -109,6 +113,9 @@ const App: React.FC = () => {
   
   const [isMuted, setIsMuted] = useState(soundManager.getIsMuted());
 
+  // State for touch controls and responsive layout
+  const [isTouch, setIsTouch] = useState(false);
+  const [tileSize, setTileSize] = useState(() => calculateTileSize(isTouchDevice()));
   
   const nextCubeId = useRef(1000); // Start high to avoid collision with level-defined IDs
   const rockSpawnInterval = useRef<number | null>(null);
@@ -128,6 +135,20 @@ const App: React.FC = () => {
   const prevLives = useRef(lives);
   const prevNumericDepositStates = useRef(numericDepositStates);
   const prevLogicCalibratorStates = useRef(logicCalibratorStates);
+
+  // Effect for detecting touch device and handling resize
+  useEffect(() => {
+    const isTouch = isTouchDevice();
+    setIsTouch(isTouch);
+    
+    const handleResize = () => {
+        setTileSize(calculateTileSize(isTouch));
+    };
+    handleResize(); // Llamada inicial para establecer el tamaño correcto
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
 
   useEffect(() => {
@@ -233,7 +254,7 @@ const App: React.FC = () => {
   const handleGameReset = useCallback(() => {
     setScore(0);
     setLives(3);
-    setCurrentScene('start');
+    setCurrentScene('welcome');
     soundManager.stopAll();
   }, []);
 
@@ -367,7 +388,7 @@ const App: React.FC = () => {
       }, 100);
     }
     
-  }, [playerPosition, isObstacle, getCubeAt, currentLevelIndex, moveCube, neutralizeCubes, level.grid, levelPhase]);
+  }, [playerPosition, isObstacle, getCubeAt, currentLevelIndex, moveCube, neutralizeCubes, level.grid]);
 
   const handleRebound = useCallback(() => {
     const playerAdjacentOffsets = [ { dr: -1, dc: 0 }, { dr: 1, dc: 0 }, { dr: 0, dc: -1 }, { dr: 0, dc: 1 } ];
@@ -444,8 +465,19 @@ Cond Col 5 < 0 ✅`;
     handleRebound();
   }, [handleRebound, playerPosition, secretDoorPositions]);
 
+  const handleTouchMove = useCallback((direction: Direction) => {
+    if (currentScene !== 'game' || gameState !== 'playing' || isHelpModalOpen || isTransitioning || preppingTransition || showEpisodeWelcome) return;
+    setFacingDirection(direction);
+    switch (direction) {
+      case 'up': handlePlayerMove(-1, 0); break;
+      case 'down': handlePlayerMove(1, 0); break;
+      case 'left': handlePlayerMove(0, -1); break;
+      case 'right': handlePlayerMove(0, 1); break;
+    }
+  }, [currentScene, gameState, handlePlayerMove, isHelpModalOpen, isTransitioning, preppingTransition, showEpisodeWelcome]);
+
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (gameState !== 'playing' || isHelpModalOpen || isTransitioning || preppingTransition || showEpisodeWelcome) return;
+    if (currentScene !== 'game' || gameState !== 'playing' || isHelpModalOpen || isTransitioning || preppingTransition || showEpisodeWelcome) return;
 
     let direction: Direction | null = null;
     switch (e.key) {
@@ -457,13 +489,27 @@ Cond Col 5 < 0 ✅`;
       default: return;
     }
     if (direction) setFacingDirection(direction);
-  }, [gameState, handlePlayerMove, handleInteraction, isHelpModalOpen, isTransitioning, preppingTransition, showEpisodeWelcome]);
+  }, [currentScene, gameState, handlePlayerMove, handleInteraction, isHelpModalOpen, isTransitioning, preppingTransition, showEpisodeWelcome]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
   
+  // Developer shortcut to final scene
+  useEffect(() => {
+    const handleDevShortcut = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === 'i') {
+        e.preventDefault();
+        setCurrentScene('finalScene');
+      }
+    };
+    window.addEventListener('keydown', handleDevShortcut);
+    return () => {
+      window.removeEventListener('keydown', handleDevShortcut);
+    };
+  }, []);
+
   // Level progression logic
   useEffect(() => {
     if (gameState !== 'playing') return;
@@ -503,7 +549,7 @@ Cond Col 5 < 0 ✅`;
             if (levelPhase < 2) setLevelPhase(2);
         }
     }
-  }, [cubes, currentLevelIndex, gameState]);
+  }, [cubes, currentLevelIndex, gameState, levelPhase]);
 
   const checkSolution = useCallback(() => {
     if (currentLevelIndex !== 4) return;
@@ -576,7 +622,7 @@ Cond Col 5 < 0 ✅`;
     } else {
         if (levelPhase !== 1) setLevelPhase(1);
     }
-}, [slotStates, currentLevelIndex, gameState]);
+}, [slotStates, currentLevelIndex, gameState, levelPhase]);
 
   // Level 3-1 Logic Gate and Phase Progression (Progressive Difficulty) - NOW INDEX 8
   useEffect(() => {
@@ -1420,19 +1466,33 @@ Cond Col 5 < 0 ✅`;
           return;
       }
 
+      const goalPosition = level.grid.reduce((pos: Position | null, row, r) => {
+        if (pos) return pos;
+        const c = row.findIndex(tile => tile === TileType.GOAL);
+        return c !== -1 ? { row: r, col: c } : null;
+      }, null);
+      
+      const goalColumn = goalPosition ? goalPosition.col : -1;
+
       const spawnInterval = setInterval(() => {
           const boardWidth = level.grid[0].length;
+          let spawnCol: number;
+          
+          do {
+            spawnCol = Math.floor(Math.random() * boardWidth);
+          } while (spawnCol === goalColumn);
+
           const newFireball: Fireball = {
               id: Date.now() + Math.random(),
-              col: Math.floor(Math.random() * boardWidth),
-              y: -TILE_SIZE * 2, // Start off-screen
+              col: spawnCol,
+              y: -tileSize * 2, // Start off-screen
               soundPlayed: false,
           };
           setFireballs(prev => [...prev, newFireball]);
       }, 2000); // Spawn every 2 seconds
 
       return () => clearInterval(spawnInterval);
-  }, [currentLevelIndex, gameState, level.grid, currentScene]);
+  }, [currentLevelIndex, gameState, level.grid, currentScene, tileSize]);
 
   // E3-N3 Fireball Animation & Collision
   useEffect(() => {
@@ -1453,17 +1513,17 @@ Cond Col 5 < 0 ✅`;
                 let soundPlayed = fb.soundPlayed;
 
                 // Play sound when fireball is about to enter the screen
-                if (!soundPlayed && newY >= -TILE_SIZE) {
+                if (!soundPlayed && newY >= -tileSize) {
                     soundManager.play('fireballFly');
                     soundPlayed = true;
                 }
 
-                const playerBox = { top: playerPosition.row * TILE_SIZE, bottom: (playerPosition.row + 1) * TILE_SIZE, left: playerPosition.col * TILE_SIZE, right: (playerPosition.col + 1) * TILE_SIZE };
-                const fireballBox = { top: newY, bottom: newY + TILE_SIZE, left: fb.col * TILE_SIZE, right: (fb.col + 1) * TILE_SIZE };
+                const playerBox = { top: playerPosition.row * tileSize, bottom: (playerPosition.row + 1) * tileSize, left: playerPosition.col * tileSize, right: (playerPosition.col + 1) * tileSize };
+                const fireballBox = { top: newY, bottom: newY + tileSize, left: fb.col * tileSize, right: (fb.col + 1) * tileSize };
 
                 if (fireballBox.left < playerBox.right && fireballBox.right > playerBox.left && fireballBox.top < playerBox.bottom && fireballBox.bottom > playerBox.top) {
                     collisionDetected = true;
-                } else if (newY < level.grid.length * TILE_SIZE) {
+                } else if (newY < level.grid.length * tileSize) {
                     // Pass the updated soundPlayed status
                     updatedFireballs.push({ ...fb, y: newY, soundPlayed });
                 }
@@ -1486,7 +1546,7 @@ Cond Col 5 < 0 ✅`;
             cancelAnimationFrame(gameLoopRef.current);
         }
     };
-  }, [gameState, currentLevelIndex, playerPosition, level.grid.length, currentScene]);
+  }, [gameState, currentLevelIndex, playerPosition, level.grid.length, currentScene, tileSize]);
 
   // Game Over from lives & Sound effects
   useEffect(() => {
@@ -1549,10 +1609,8 @@ Cond Col 5 < 0 ✅`;
   const handleZeroEffectComplete = useCallback((id: number) => setZeroEffects(p => p.filter(e => e.id !== id)), []);
   const handleHeartbreakComplete = useCallback((id: number) => setHeartbreakEffects(p => p.filter(e => e.id !== id)), []);
 
-  const VIEWPORT_HEIGHT_TILES = 14;
-  const VIEWPORT_WIDTH_TILES = 20;
-  const viewportPixelHeight = VIEWPORT_HEIGHT_TILES * TILE_SIZE;
-  const viewportPixelWidth = VIEWPORT_WIDTH_TILES * TILE_SIZE;
+  const viewportPixelHeight = VIEWPORT_HEIGHT_TILES * tileSize;
+  const viewportPixelWidth = VIEWPORT_WIDTH_TILES * tileSize;
   
   /**
    * Calcula la posición del tablero de juego para centrar la cámara en el jugador.
@@ -1562,14 +1620,14 @@ Cond Col 5 < 0 ✅`;
    */
   const calculateBoardStyle = (pPos: Position, lvl: LevelData) => {
     const focusPosition = pPos;
-    const boardPixelHeight = lvl.grid.length * TILE_SIZE;
-    const boardPixelWidth = lvl.grid[0].length * TILE_SIZE;
+    const boardPixelHeight = lvl.grid.length * tileSize;
+    const boardPixelWidth = lvl.grid[0].length * tileSize;
     
     const verticalOffset = (viewportPixelHeight * 2 / 3);
-    const cameraY = focusPosition.row * TILE_SIZE - verticalOffset;
+    const cameraY = focusPosition.row * tileSize - verticalOffset;
     
     const clampedCameraY = Math.max(0, Math.min(cameraY, boardPixelHeight - viewportPixelHeight));
-    const cameraX = focusPosition.col * TILE_SIZE - (viewportPixelWidth / 2);
+    const cameraX = focusPosition.col * tileSize - (viewportPixelWidth / 2);
     const clampedCameraX = Math.max(0, Math.min(cameraX, boardPixelWidth - viewportPixelWidth));
     const boardXOffset = Math.max(0, (viewportPixelWidth - boardPixelWidth) / 2);
 
@@ -1678,7 +1736,8 @@ Cond Col 5 < 0 ✅`;
   if (currentScene === 'start') return <StartScreen onSelectEpisode={handleSelectEpisode} />;
   if (currentScene === 'intro') return <StoryIntro onComplete={() => setCurrentScene('iceCavern')} />;
   if (currentScene === 'iceCavern') return <IceCavern onComplete={() => setCurrentScene('game')} />;
-  if (currentScene === 'finalScene') return <FinalScene onComplete={handleGameReset} />;
+  // FIX: Pass tileSize prop to FinalScene.
+  if (currentScene === 'finalScene') return <FinalScene onComplete={handleGameReset} tileSize={tileSize} />;
 
   const currentObjective = level.objectives[levelPhase] || " ";
 
@@ -1702,6 +1761,7 @@ Cond Col 5 < 0 ✅`;
         </header>
         <div className="flex-grow flex items-center justify-center p-4 pt-0 overflow-hidden">
           <div className="relative">
+             {isTouch && <TouchControls onMove={handleTouchMove} onAction={handleInteraction} />}
             <div className="border-4 border-purple-500 rounded-lg shadow-2xl overflow-hidden relative" style={{ height: viewportPixelHeight, width: viewportPixelWidth }}>
               {assemblerOverlays}
               {hintMessage && (
@@ -1751,6 +1811,7 @@ Cond Col 5 < 0 ✅`;
                     heartbreakEffects={heartbreakEffects}
                     onHeartbreakComplete={handleHeartbreakComplete}
                     secretDoorPositions={secretDoorPositions}
+                    tileSize={tileSize}
                   />
                 </div>
                 
@@ -1792,6 +1853,7 @@ Cond Col 5 < 0 ✅`;
                        heartbreakEffects={[]}
                        onHeartbreakComplete={() => {}}
                        secretDoorPositions={[]}
+                       tileSize={tileSize}
                      />
                   </div>
                 )}

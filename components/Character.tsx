@@ -1,11 +1,11 @@
 
 import React from 'react';
 import type { Position, Direction } from '../types';
-import { TILE_SIZE } from '../constants';
 
 interface CharacterProps {
   position: Position;
   facingDirection: Direction;
+  tileSize: number;
 }
 
 const ZetaFront: React.FC = () => (
@@ -154,12 +154,12 @@ const ZetaSideRight: React.FC = () => (
 );
 
 
-const Character: React.FC<CharacterProps> = ({ position, facingDirection }) => {
+const Character: React.FC<CharacterProps> = ({ position, facingDirection, tileSize }) => {
   const style: React.CSSProperties = {
-    top: `${position.row * TILE_SIZE}px`,
-    left: `${position.col * TILE_SIZE}px`,
-    width: `${TILE_SIZE}px`,
-    height: `${TILE_SIZE}px`,
+    top: `${position.row * tileSize}px`,
+    left: `${position.col * tileSize}px`,
+    width: `${tileSize}px`,
+    height: `${tileSize}px`,
     transition: 'top 0.1s ease-in-out, left 0.1s ease-in-out',
     transform: '',
   };

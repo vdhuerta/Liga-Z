@@ -53,6 +53,16 @@
                             boxShadow: 'inset 0 0 16px rgba(96, 165, 250, 0.6)',
                         },
                     },
+                    'pulse-red': {
+                        '0%, 100%': {
+                            fill: 'rgba(239, 68, 68, 0.7)',
+                            stroke: 'rgba(153, 27, 27, 1)',
+                        },
+                        '50%': {
+                            fill: 'rgba(248, 113, 113, 1)',
+                            stroke: 'rgba(185, 28, 28, 1)',
+                        },
+                    },
                     'pulse-synth-core': {
                         '0%, 100%': {
                             boxShadow: 'inset 0 0 10px #60a5fa, 0 0 15px #60a5fa',
@@ -191,6 +201,53 @@
                             transform: 'scale(1)',
                             textShadow: '0 0 10px #fff, 0 0 20px #fde047, 0 0 30px #fde047',
                         },
+                    },
+                    'smoke-rise': {
+                        '0%': { transform: 'translateY(0) scale(1)', opacity: 0.6 },
+                        '100%': { transform: 'translateY(-100px) scale(4)', opacity: 0 },
+                    },
+                    'screen-flicker': {
+                        '0%, 100%': { opacity: 1, filter: 'brightness(1)' },
+                        '2%': { opacity: 0.8, filter: 'brightness(0.9)' },
+                        '4%': { opacity: 1, filter: 'brightness(1)' },
+                        '30%': { opacity: 1, filter: 'brightness(1)' },
+                        '32%': { opacity: 0.9, filter: 'brightness(1.1)' },
+                        '34%': { opacity: 1, filter: 'brightness(1)' },
+                    },
+                    'ship-shake': {
+                        '0%, 100%': { transform: 'translateX(0)' },
+                        '25%': { transform: 'translateX(-2px)' },
+                        '50%': { transform: 'translateX(2px)' },
+                        '75%': { transform: 'translateX(-2px)' },
+                    },
+                    'ship-depart': {
+                        '0%': {
+                            transform: 'translateY(0) scale(1) rotate(0deg)',
+                            opacity: 1,
+                            transformOrigin: 'bottom center',
+                        },
+                        '10%': {
+                            transform: 'translateY(-20px) scale(1.05) rotate(1deg)',
+                            transformOrigin: 'bottom center',
+                        },
+                        '50%': {
+                            transform: 'translateY(-50vh) scale(2.5) rotate(-2deg)',
+                            opacity: 1,
+                            transformOrigin: 'bottom center',
+                        },
+                        '100%': {
+                            transform: 'translateY(-150vh) scale(6) rotate(5deg)',
+                            opacity: 0,
+                            transformOrigin: 'bottom center',
+                        },
+                    },
+                    'star-scroll': {
+                        'from': { backgroundPosition: '0 0' },
+                        'to': { backgroundPosition: '-10000px 5000px' },
+                    },
+                    'radar-sweep': {
+                        'from': { transform: 'rotate(0deg)' },
+                        'to': { transform: 'rotate(360deg)' },
                     }
                 },
                 animation: {
@@ -199,6 +256,7 @@
                     'pulse-yellow': 'pulse-yellow 2s infinite',
                     'pulse-glow': 'pulse-glow 2s infinite ease-in-out',
                     'pulse-blue': 'pulse-blue 2s infinite',
+                    'pulse-red': 'pulse-red 1.5s infinite ease-in-out',
                     'pulse-synth-core': 'pulse-synth-core 2s infinite ease-in-out',
                     'pulse-inverter': 'pulse-inverter 3s infinite ease-in-out',
                     'pulse-pressure-plate': 'pulse-pressure-plate 3s infinite ease-in-out',
@@ -216,6 +274,12 @@
                     'sphere-pulse-chaotic': 'sphere-pulse-chaotic 4s infinite ease-in-out',
                     'sphere-pulse-harmonic': 'sphere-pulse-harmonic 4s infinite ease-in-out',
                     'final-zero-glow': 'final-zero-glow 4s ease-out forwards',
+                    'smoke-rise': 'smoke-rise 5s ease-out infinite',
+                    'screen-flicker': 'screen-flicker 4s linear infinite',
+                    'ship-shake': 'ship-shake 0.5s linear infinite',
+                    'ship-depart': 'ship-depart 4s ease-in-out forwards',
+                    'star-scroll': 'star-scroll 150s linear infinite',
+                    'radar-sweep': 'radar-sweep 3s linear infinite',
                 }
             }
         }
@@ -302,11 +366,39 @@
         border-radius: 10px;
         border: 3px solid #0c1a1e;
     }
+    .starfield {
+        background-image:
+            radial-gradient(2px 2px at 20% 30%, #fff, transparent),
+            radial-gradient(2px 2px at 80% 60%, #fff, transparent),
+            radial-gradient(2px 2px at 50% 90%, #fff, transparent),
+            radial-gradient(1px 1px at 40% 10%, #fff, transparent),
+            radial-gradient(1px 1px at 90% 20%, #fff, transparent),
+            radial-gradient(1px 1px at 10% 80%, #fff, transparent);
+        background-repeat: repeat;
+        background-size: 300px 300px;
+        background-color: #000;
+    }
+
+    /* Estilos para forzar modo horizontal en tablets */
+    @media (orientation: portrait) {
+      #rotate-device-overlay {
+        display: flex;
+      }
+      #root {
+        display: none;
+      }
+    }
 </style>
 <link rel="stylesheet" href="/index.css">
 </head>
 <body class="bg-[#1a0f0f] text-white overflow-hidden">
   <div id="root"></div>
+  <div id="rotate-device-overlay" class="fixed inset-0 bg-black text-white z-50 flex-col items-center justify-center hidden">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 mb-4 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2zM5 12h.01M19 12h.01" />
+    </svg>
+    <p class="font-arcade text-lg text-center">Por favor, rota tu dispositivo al modo horizontal para jugar.</p>
+  </div>
   <script type="module" src="/index.tsx"></script>
 </body>
 </html>

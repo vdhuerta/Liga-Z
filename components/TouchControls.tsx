@@ -1,0 +1,78 @@
+import React from 'react';
+import type { Direction } from '../types';
+
+interface TouchControlsProps {
+  onMove: (direction: Direction) => void;
+  onAction: () => void;
+}
+
+const ArrowIcon: React.FC<{ rotation: number }> = ({ rotation }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="h-8 w-8 text-white"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    style={{ transform: `rotate(${rotation}deg)` }}
+  >
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+  </svg>
+);
+
+const TouchControls: React.FC<TouchControlsProps> = ({ onMove, onAction }) => {
+  const handleTouch = (e: React.TouchEvent, action: () => void) => {
+    e.preventDefault();
+    action();
+  };
+
+  return (
+    <>
+      {/* Action Button (Left) */}
+      <div className="fixed left-4 top-1/2 -translate-y-1/2 z-30">
+        <button
+          className="w-24 h-24 bg-red-600/75 rounded-full flex items-center justify-center border-4 border-red-800/90 active:bg-red-500/90"
+          onTouchStart={(e) => handleTouch(e, onAction)}
+          aria-label="Acción de Rebote"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l-5 2 1-6z" />
+          </svg>
+        </button>
+      </div>
+
+      {/* D-Pad (Right) */}
+      <div className="fixed right-4 top-1/2 -translate-y-1/2 z-30 grid grid-cols-3 grid-rows-3 w-40 h-40">
+        <button
+          className="col-start-2 row-start-1 bg-gray-800/75 rounded-t-lg active:bg-gray-700/90"
+          onTouchStart={(e) => handleTouch(e, () => onMove('up'))}
+          aria-label="Mover hacia arriba"
+        >
+          <ArrowIcon rotation={0} />
+        </button>
+        <button
+          className="col-start-1 row-start-2 bg-gray-800/75 rounded-l-lg active:bg-gray-700/90"
+          onTouchStart={(e) => handleTouch(e, () => onMove('left'))}
+          aria-label="Mover hacia la izquierda"
+        >
+          <ArrowIcon rotation={-90} />
+        </button>
+        <button
+          className="col-start-3 row-start-2 bg-gray-800/75 rounded-r-lg active:bg-gray-700/90"
+          onTouchStart={(e) => handleTouch(e, () => onMove('right'))}
+          aria-label="Mover hacia la derecha"
+        >
+          <ArrowIcon rotation={90} />
+        </button>
+        <button
+          className="col-start-2 row-start-3 bg-gray-800/75 rounded-b-lg active:bg-gray-700/90"
+          onTouchStart={(e) => handleTouch(e, () => onMove('down'))}
+          aria-label="Mover hacia abajo"
+        >
+          <ArrowIcon rotation={180} />
+        </button>
+      </div>
+    </>
+  );
+};
+
+export default TouchControls;

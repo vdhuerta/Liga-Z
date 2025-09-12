@@ -2,11 +2,11 @@
 
 import React from 'react';
 import type { Cube as CubeData } from '../types';
-import { TILE_SIZE } from '../constants';
 
 interface CubeProps {
   data: CubeData;
   isRevealed?: boolean;
+  tileSize: number;
 }
 
 // FIX: Export IceCubeIcon to resolve import error in GeneralHelpModal.tsx.
@@ -99,14 +99,14 @@ export const MemoryCubeIcon: React.FC = () => (
   );
 
 
-const Cube: React.FC<CubeProps> = ({ data, isRevealed }) => {
+const Cube: React.FC<CubeProps> = ({ data, isRevealed, tileSize }) => {
   const { type, value, position, status, isMemory } = data;
 
   const style = {
-    top: `${position.row * TILE_SIZE}px`,
-    left: `${position.col * TILE_SIZE}px`,
-    width: `${TILE_SIZE}px`,
-    height: `${TILE_SIZE}px`,
+    top: `${position.row * tileSize}px`,
+    left: `${position.col * tileSize}px`,
+    width: `${tileSize}px`,
+    height: `${tileSize}px`,
   };
 
   const statusClasses = status === 'evaporating'

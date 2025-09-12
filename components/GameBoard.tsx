@@ -1,7 +1,7 @@
+
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import type { LevelData, Position, Cube as CubeData, Direction, EvaporationEffectData, Prize as PrizeData, Key as KeyData, InteractiveRock as InteractiveRockData, Fireball as FireballData, HeartbreakEffectData, AssemblerGoal } from '../types';
 import { TileType } from '../types';
-import { TILE_SIZE } from '../constants';
 import Character from './Character';
 import Cube from './Cube';
 import Prize from './Prize';
@@ -16,6 +16,7 @@ import Heartbreak from './Heartbreak';
 interface EvaporationEffectProps {
   position: Position;
   onComplete: () => void;
+  tileSize: number;
 }
 
 const PARTICLE_COUNT = 30;
@@ -32,7 +33,7 @@ interface Particle {
   color: string;
 }
 
-const EvaporationEffect: React.FC<EvaporationEffectProps> = ({ position, onComplete }) => {
+const EvaporationEffect: React.FC<EvaporationEffectProps> = ({ position, onComplete, tileSize }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
   const onCompleteRef = useRef(onComplete);
@@ -45,8 +46,8 @@ const EvaporationEffect: React.FC<EvaporationEffectProps> = ({ position, onCompl
     if (!ctx) return;
 
     if (particlesRef.current.length === 0) {
-      const centerX = TILE_SIZE / 2;
-      const centerY = TILE_SIZE / 2;
+      const centerX = tileSize / 2;
+      const centerY = tileSize / 2;
       for (let i = 0; i < PARTICLE_COUNT; i++) {
         const angle = Math.random() * Math.PI * 2;
         const speed = Math.random() * 2 + 1;
@@ -66,7 +67,7 @@ const EvaporationEffect: React.FC<EvaporationEffectProps> = ({ position, onCompl
     
     const animate = () => {
       if (!canvasRef.current) return;
-      ctx.clearRect(0, 0, TILE_SIZE, TILE_SIZE);
+      ctx.clearRect(0, 0, tileSize, tileSize);
       
       let allFaded = true;
       particlesRef.current.forEach(p => {
@@ -100,13 +101,13 @@ const EvaporationEffect: React.FC<EvaporationEffectProps> = ({ position, onCompl
     return () => {
       cancelAnimationFrame(animationFrameId);
     };
-  }, []);
+  }, [tileSize]);
 
   const style: React.CSSProperties = {
-    top: `${position.row * TILE_SIZE}px`,
-    left: `${position.col * TILE_SIZE}px`,
-    width: `${TILE_SIZE}px`,
-    height: `${TILE_SIZE}px`,
+    top: `${position.row * tileSize}px`,
+    left: `${position.col * tileSize}px`,
+    width: `${tileSize}px`,
+    height: `${tileSize}px`,
     pointerEvents: 'none',
     zIndex: 50,
   };
@@ -114,8 +115,8 @@ const EvaporationEffect: React.FC<EvaporationEffectProps> = ({ position, onCompl
   return (
     <canvas
       ref={canvasRef}
-      width={TILE_SIZE}
-      height={TILE_SIZE}
+      width={tileSize}
+      height={tileSize}
       className="absolute"
       style={style}
       aria-hidden="true"
@@ -130,9 +131,10 @@ const EvaporationEffect: React.FC<EvaporationEffectProps> = ({ position, onCompl
 interface NeutralizationZeroProps {
   position: Position;
   onComplete: () => void;
+  tileSize: number;
 }
 
-const NeutralizationZero: React.FC<NeutralizationZeroProps> = ({ position, onComplete }) => {
+const NeutralizationZero: React.FC<NeutralizationZeroProps> = ({ position, onComplete, tileSize }) => {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -159,10 +161,10 @@ const NeutralizationZero: React.FC<NeutralizationZeroProps> = ({ position, onCom
   }, [onComplete]);
 
   const style: React.CSSProperties = {
-    top: `${position.row * TILE_SIZE}px`,
-    left: `${position.col * TILE_SIZE}px`,
-    width: `${TILE_SIZE}px`,
-    height: `${TILE_SIZE}px`,
+    top: `${position.row * tileSize}px`,
+    left: `${position.col * tileSize}px`,
+    width: `${tileSize}px`,
+    height: `${tileSize}px`,
     pointerEvents: 'none',
   };
 
@@ -214,6 +216,7 @@ interface GameBoardProps {
   heartbreakEffects: HeartbreakEffectData[];
   onHeartbreakComplete: (id: number) => void;
   secretDoorPositions?: { row: number, col: number }[];
+  tileSize: number;
 }
 
 const AbsoluteDoor: React.FC<{ open: boolean }> = ({ open }) => {
@@ -599,11 +602,11 @@ const GameBoard: React.FC<GameBoardProps> = ({
   effects, onEffectComplete, prizeEffects, onPrizeEffectComplete, zeroEffects, onZeroEffectComplete, 
   slotStates, logicGateStates, absoluteDoorStates, balanceState, balanceSumA, balanceSumB, mobilePlatformUp, isBalanceDoorOpen,
   isRevealedCubeIds, interactiveRocks, onRockLanded, numericDepositStates, logicCalibratorStates, fireballs,
-  heartbreakEffects, onHeartbreakComplete, secretDoorPositions
+  heartbreakEffects, onHeartbreakComplete, secretDoorPositions, tileSize
 }) => {
   const { grid } = level;
-  const boardHeight = grid.length * TILE_SIZE;
-  const boardWidth = grid[0].length * TILE_SIZE;
+  const boardHeight = grid.length * tileSize;
+  const boardWidth = grid[0].length * tileSize;
 
   const tileProps: TileComponentProps = { level, levelPhase, grid, slotStates, logicGateStates, absoluteDoorStates, balanceState, mobilePlatformUp, isBalanceDoorOpen, row: 0, col: 0 };
 
@@ -620,15 +623,15 @@ const GameBoard: React.FC<GameBoardProps> = ({
         const minCol = Math.min(...deposit.positions.map(p => p.col));
         const maxCol = Math.max(...deposit.positions.map(p => p.col));
 
-        const width = (maxCol - minCol + 1) * TILE_SIZE;
+        const width = (maxCol - minCol + 1) * tileSize;
         
         return (
             <div 
                 key={deposit.id} 
                 className={`absolute pointer-events-none z-10 font-arcade text-center p-1 bg-black bg-opacity-60 rounded ${textColor}`}
                 style={{
-                    top: `${(minRow - 0.8) * TILE_SIZE}px`, // Position above the deposit area
-                    left: `${minCol * TILE_SIZE}px`,
+                    top: `${(minRow - 0.8) * tileSize}px`, // Position above the deposit area
+                    left: `${minCol * tileSize}px`,
                     width: `${width}px`,
                     textShadow: '1px 1px 2px black',
                     fontSize: '0.8rem'
@@ -638,7 +641,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
             </div>
         );
     });
-  }, [level.numericDeposits, numericDepositStates]);
+  }, [level.numericDeposits, numericDepositStates, tileSize]);
 
   const logicCalibratorOverlays = useMemo(() => {
     return level.logicCalibrators?.map(cal => {
@@ -652,15 +655,15 @@ const GameBoard: React.FC<GameBoardProps> = ({
         const minRow = Math.min(...cal.positions.map(p => p.row));
         const minCol = Math.min(...cal.positions.map(p => p.col));
         const maxCol = Math.max(...cal.positions.map(p => p.col));
-        const width = (maxCol - minCol + 1) * TILE_SIZE;
+        const width = (maxCol - minCol + 1) * tileSize;
         
         return (
             <div 
                 key={cal.id} 
                 className={`absolute pointer-events-none z-10 font-arcade text-center p-1 bg-black bg-opacity-60 rounded ${textColor}`}
                 style={{
-                    top: `${(minRow - 0.8) * TILE_SIZE}px`,
-                    left: `${minCol * TILE_SIZE}px`,
+                    top: `${(minRow - 0.8) * tileSize}px`,
+                    left: `${minCol * tileSize}px`,
                     width: `${width}px`,
                     textShadow: '1px 1px 2px black',
                     fontSize: '0.8rem'
@@ -670,7 +673,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
             </div>
         );
     });
-  }, [level.logicCalibrators, logicCalibratorStates]);
+  }, [level.logicCalibrators, logicCalibratorStates, tileSize]);
 
 
   return (
@@ -678,8 +681,8 @@ const GameBoard: React.FC<GameBoardProps> = ({
       <div
         className="grid absolute"
         style={{
-          gridTemplateRows: `repeat(${grid.length}, ${TILE_SIZE}px)`,
-          gridTemplateColumns: `repeat(${grid[0].length}, ${TILE_SIZE}px)`,
+          gridTemplateRows: `repeat(${grid.length}, ${tileSize}px)`,
+          gridTemplateColumns: `repeat(${grid[0].length}, ${tileSize}px)`,
           width: boardWidth,
           height: boardHeight,
         }}
@@ -699,10 +702,10 @@ const GameBoard: React.FC<GameBoardProps> = ({
             key={`secret-door-${index}`}
             className="absolute bg-yellow-400/80 animate-pulse-glow rounded-full"
             style={{
-                top: `${pos.row * TILE_SIZE}px`,
-                left: `${pos.col * TILE_SIZE}px`,
+                top: `${pos.row * tileSize}px`,
+                left: `${pos.col * tileSize}px`,
                 width: '4px',
-                height: `${TILE_SIZE}px`,
+                height: `${tileSize}px`,
                 zIndex: 1, // Above tile, below character
             }}
         />
@@ -711,29 +714,29 @@ const GameBoard: React.FC<GameBoardProps> = ({
       {level.balanceFulcrum && (
         <>
           <div className="absolute" style={{ 
-            top: `${level.balanceFulcrum.row * TILE_SIZE}px`, 
-            left: `${(level.balanceFulcrum.col - 2) * TILE_SIZE}px`, 
-            width: `${4 * TILE_SIZE}px`, 
-            height: `${TILE_SIZE}px`, 
+            top: `${level.balanceFulcrum.row * tileSize}px`, 
+            left: `${(level.balanceFulcrum.col - 2) * tileSize}px`, 
+            width: `${4 * tileSize}px`, 
+            height: `${tileSize}px`, 
             pointerEvents: 'none', 
             zIndex: 1
           }}>
             <BalanceIndicator balanceState={balanceState} />
           </div>
           <div className="absolute font-arcade text-white text-center p-1 bg-black bg-opacity-75 rounded flex items-center justify-center" style={{
-            top: `${(level.balanceFulcrum.row + 1) * TILE_SIZE}px`,
-            left: `${(level.balanceFulcrum.col - 2) * TILE_SIZE}px`,
-            width: `${TILE_SIZE}px`,
-            height: `${TILE_SIZE}px`,
+            top: `${(level.balanceFulcrum.row + 1) * tileSize}px`,
+            left: `${(level.balanceFulcrum.col - 2) * tileSize}px`,
+            width: `${tileSize}px`,
+            height: `${tileSize}px`,
             textShadow: '1px 1px 2px black'
           }}>
              {balanceSumA}
           </div>
            <div className="absolute font-arcade text-white text-center p-1 bg-black bg-opacity-75 rounded flex items-center justify-center" style={{
-            top: `${(level.balanceFulcrum.row + 1) * TILE_SIZE}px`,
-            left: `${(level.balanceFulcrum.col + 1) * TILE_SIZE}px`,
-            width: `${TILE_SIZE}px`,
-            height: `${TILE_SIZE}px`,
+            top: `${(level.balanceFulcrum.row + 1) * tileSize}px`,
+            left: `${(level.balanceFulcrum.col + 1) * tileSize}px`,
+            width: `${tileSize}px`,
+            height: `${tileSize}px`,
             textShadow: '1px 1px 2px black'
           }}>
              {balanceSumB}
@@ -742,11 +745,13 @@ const GameBoard: React.FC<GameBoardProps> = ({
       )}
       
       {prizes.map(prize => (
-        <Prize key={prize.id} data={prize} />
+        // FIX: Pass tileSize prop to Prize component.
+        <Prize key={prize.id} data={prize} tileSize={tileSize} />
       ))}
       
       {keys.map(key => (
-        <Key key={key.id} data={key} />
+        // FIX: Pass tileSize prop to Key component.
+        <Key key={key.id} data={key} tileSize={tileSize} />
       ))}
 
       {cubes.map(cube => (
@@ -754,15 +759,17 @@ const GameBoard: React.FC<GameBoardProps> = ({
             key={cube.id} 
             data={cube} 
             isRevealed={isRevealedCubeIds.includes(cube.id)}
+            tileSize={tileSize}
         />
       ))}
 
       {interactiveRocks.map(rock => (
-        <InteractiveRock key={rock.id} data={rock} onLand={onRockLanded} />
+        // FIX: Pass tileSize prop to InteractiveRock component.
+        <InteractiveRock key={rock.id} data={rock} onLand={onRockLanded} tileSize={tileSize} />
       ))}
       
       {fireballs.map(fireball => (
-        <Fireball key={fireball.id} data={fireball} />
+        <Fireball key={fireball.id} data={fireball} tileSize={tileSize} />
       ))}
 
       {effects.map(effect => (
@@ -770,6 +777,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
           key={effect.id}
           position={effect.position}
           onComplete={() => onEffectComplete(effect.id)}
+          tileSize={tileSize}
         />
       ))}
       
@@ -778,6 +786,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
           key={effect.id}
           position={effect.position}
           onComplete={() => onPrizeEffectComplete(effect.id)}
+          tileSize={tileSize}
         />
       ))}
 
@@ -786,10 +795,11 @@ const GameBoard: React.FC<GameBoardProps> = ({
           key={effect.id}
           position={effect.position}
           onComplete={() => onZeroEffectComplete(effect.id)}
+          tileSize={tileSize}
         />
       ))}
       
-      <Character position={playerPosition} facingDirection={facingDirection} />
+      <Character position={playerPosition} facingDirection={facingDirection} tileSize={tileSize} />
       
       {heartbreakEffects.map(effect => (
         <Heartbreak
@@ -797,6 +807,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
           id={effect.id}
           position={effect.position}
           onComplete={onHeartbreakComplete}
+          tileSize={tileSize}
         />
       ))}
     </div>

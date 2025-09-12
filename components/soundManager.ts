@@ -18,6 +18,7 @@ const soundUrls = {
   rockEmitter: 'https://raw.githubusercontent.com/vdhuerta/assets-aplications/main/Z_EmisorDeRocas.mp3',
   fireballFly: 'https://raw.githubusercontent.com/vdhuerta/assets-aplications/main/Z_BolaDeFuego.mp3',
   gameOver: 'https://raw.githubusercontent.com/vdhuerta/assets-aplications/main/Z_GameOver.mp3',
+  shipTakeoff: 'https://raw.githubusercontent.com/vdhuerta/assets-aplications/main/Z_DespegueNave.mp3',
   menuMusic: 'https://raw.githubusercontent.com/vdhuerta/assets-aplications/main/Z_MusicaMenuPrincipal.mp3',
   prologueAmbience: 'https://raw.githubusercontent.com/vdhuerta/assets-aplications/main/Z_AmbientePrologo.mp3',
   iceCavernAmbience: 'https://raw.githubusercontent.com/vdhuerta/assets-aplications/main/Z_AmbienteCaverna.mp3',
@@ -31,6 +32,7 @@ const musicKeys: Set<SoundKey> = new Set(['menuMusic', 'prologueAmbience', 'iceC
 
 class SoundManager {
   private musicAudio: HTMLAudioElement | null = null;
+  private longSfx: HTMLAudioElement | null = null;
   private isMuted = false;
   private preloaded = false;
 
@@ -45,7 +47,7 @@ class SoundManager {
     console.log('All sounds preloaded.');
   }
 
-  play(key: SoundKey, options: { volume?: number; loop?: boolean } = {}) {
+  play(key: SoundKey, options: { volume?: number; loop?: boolean; trackable?: boolean } = {}) {
     if (this.isMuted) return;
 
     if (musicKeys.has(key)) {
@@ -67,8 +69,7 @@ class SoundManager {
       this.musicAudio = audio;
 
     } else {
-      // For SFX, create a new Audio object to play it as "fire-and-forget".
-      // This prevents it from being stopped by `stopAll` during scene transitions.
+      // For SFX, create a new Audio object to play it.
       const sfx = new Audio(soundUrls[key]);
       sfx.volume = options.volume ?? 0.12; // Default SFX volume.
       sfx.loop = options.loop ?? false;
@@ -79,22 +80,35 @@ class SoundManager {
           console.error(`Error playing sound ${key}:`, e);
         }
       });
+      
+      if (options.trackable) {
+        if (this.longSfx) {
+          this.longSfx.pause();
+        }
+        this.longSfx = sfx;
+      }
     }
   }
 
   stopAll() {
-    // This method now only stops the main music track, leaving SFX untouched.
+    // Stop the main music track.
     if (this.musicAudio) {
       this.musicAudio.pause();
       this.musicAudio.currentTime = 0;
       this.musicAudio = null;
+    }
+    // Stop any long-running SFX.
+    if (this.longSfx) {
+      this.longSfx.pause();
+      this.longSfx.currentTime = 0;
+      this.longSfx = null;
     }
   }
 
   toggleMute(): boolean {
     this.isMuted = !this.isMuted;
     if (this.isMuted) {
-      this.stopAll(); // This will just stop the music.
+      this.stopAll();
     }
     // Music will be restarted by the app's `useEffect` hook if needed.
     return this.isMuted;

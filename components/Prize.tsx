@@ -1,9 +1,11 @@
+
 import React from 'react';
 import type { Prize as PrizeData } from '../types';
-import { TILE_SIZE } from '../constants';
+// FIX: TILE_SIZE is obsolete; tileSize is now passed as a prop for dynamic sizing.
 
 interface PrizeProps {
   data: PrizeData;
+  tileSize: number;
 }
 
 export const TrophyIcon: React.FC = () => (
@@ -25,14 +27,15 @@ export const TrophyIcon: React.FC = () => (
 );
 
 
-const Prize: React.FC<PrizeProps> = ({ data }) => {
+const Prize: React.FC<PrizeProps> = ({ data, tileSize }) => {
   const { position, status } = data;
 
   const style: React.CSSProperties = {
-    top: `${position.row * TILE_SIZE}px`,
-    left: `${position.col * TILE_SIZE}px`,
-    width: `${TILE_SIZE}px`,
-    height: `${TILE_SIZE}px`,
+    // FIX: Use the tileSize prop for dynamic sizing.
+    top: `${position.row * tileSize}px`,
+    left: `${position.col * tileSize}px`,
+    width: `${tileSize}px`,
+    height: `${tileSize}px`,
     zIndex: 5,
   };
 

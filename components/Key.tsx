@@ -1,10 +1,11 @@
 
 import React from 'react';
 import type { Key as KeyData } from '../types';
-import { TILE_SIZE } from '../constants';
+// FIX: TILE_SIZE is obsolete; tileSize is now passed as a prop for dynamic sizing.
 
 interface KeyProps {
   data: KeyData;
+  tileSize: number;
 }
 
 // FIX: Export KeyIcon to resolve import error in GeneralHelpModal.tsx.
@@ -17,14 +18,15 @@ export const KeyIcon: React.FC = () => (
 );
 
 
-const Key: React.FC<KeyProps> = ({ data }) => {
+const Key: React.FC<KeyProps> = ({ data, tileSize }) => {
   const { position, status } = data;
 
   const style: React.CSSProperties = {
-    top: `${position.row * TILE_SIZE}px`,
-    left: `${position.col * TILE_SIZE}px`,
-    width: `${TILE_SIZE}px`,
-    height: `${TILE_SIZE}px`,
+    // FIX: Use the tileSize prop for dynamic sizing.
+    top: `${position.row * tileSize}px`,
+    left: `${position.col * tileSize}px`,
+    width: `${tileSize}px`,
+    height: `${tileSize}px`,
     zIndex: 5,
   };
 

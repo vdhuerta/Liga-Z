@@ -1,14 +1,14 @@
 import React, { useEffect } from 'react';
-import { TILE_SIZE } from '../constants';
 import type { Position } from '../types';
 
 interface HeartbreakProps {
   id: number;
   position: Position;
   onComplete: (id: number) => void;
+  tileSize: number;
 }
 
-const Heartbreak: React.FC<HeartbreakProps> = ({ id, position, onComplete }) => {
+const Heartbreak: React.FC<HeartbreakProps> = ({ id, position, onComplete, tileSize }) => {
   useEffect(() => {
     const timer = setTimeout(() => onComplete(id), 1000); // Duration matches animation
     return () => clearTimeout(timer);
@@ -16,10 +16,10 @@ const Heartbreak: React.FC<HeartbreakProps> = ({ id, position, onComplete }) => 
 
   const style: React.CSSProperties = {
     position: 'absolute',
-    left: `${position.col * TILE_SIZE}px`,
-    top: `${position.row * TILE_SIZE}px`,
-    width: TILE_SIZE,
-    height: TILE_SIZE,
+    left: `${position.col * tileSize}px`,
+    top: `${position.row * tileSize}px`,
+    width: tileSize,
+    height: tileSize,
     zIndex: 60, // Above everything
     pointerEvents: 'none',
   };

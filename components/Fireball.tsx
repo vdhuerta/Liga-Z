@@ -1,20 +1,20 @@
 import React from 'react';
-import { TILE_SIZE } from '../constants';
 import type { Fireball as FireballData } from '../types';
 
 interface FireballProps {
   data: FireballData;
+  tileSize: number;
 }
 
-const Fireball: React.FC<FireballProps> = ({ data }) => {
+const Fireball: React.FC<FireballProps> = ({ data, tileSize }) => {
   const { col, y } = data;
 
   const style: React.CSSProperties = {
     position: 'absolute',
-    left: `${col * TILE_SIZE}px`,
+    left: `${col * tileSize}px`,
     top: `${y}px`,
-    width: TILE_SIZE,
-    height: TILE_SIZE,
+    width: tileSize,
+    height: tileSize,
     zIndex: 45, // Above board but below character/effects
   };
 

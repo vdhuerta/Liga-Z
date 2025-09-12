@@ -1,10 +1,12 @@
+
 import React, { useState, useEffect } from 'react';
 import type { InteractiveRock as RockData } from '../types';
-import { TILE_SIZE } from '../constants';
+// FIX: TILE_SIZE is obsolete; tileSize is now passed as a prop for dynamic sizing.
 
 interface InteractiveRockProps {
   data: RockData;
   onLand: (rockId: number) => void;
+  tileSize: number;
 }
 
 const RockIcon: React.FC = () => (
@@ -27,7 +29,7 @@ const RockIcon: React.FC = () => (
 );
 
 
-const InteractiveRock: React.FC<InteractiveRockProps> = ({ data, onLand }) => {
+const InteractiveRock: React.FC<InteractiveRockProps> = ({ data, onLand, tileSize }) => {
     const { path, id } = data;
     const [pathIndex, setPathIndex] = useState(0);
 
@@ -53,10 +55,11 @@ const InteractiveRock: React.FC<InteractiveRockProps> = ({ data, onLand }) => {
     if (!currentPos) return null; // Should not happen, but a good safeguard
 
     const style: React.CSSProperties = {
-        top: `${currentPos.row * TILE_SIZE}px`,
-        left: `${currentPos.col * TILE_SIZE}px`,
-        width: `${TILE_SIZE}px`,
-        height: `${TILE_SIZE}px`,
+        // FIX: Use the tileSize prop for dynamic sizing.
+        top: `${currentPos.row * tileSize}px`,
+        left: `${currentPos.col * tileSize}px`,
+        width: `${tileSize}px`,
+        height: `${tileSize}px`,
         transition: 'top 0.5s ease-in-out, left 0.5s ease-in-out',
         zIndex: 50,
     };

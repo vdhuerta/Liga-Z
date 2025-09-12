@@ -1,7 +1,31 @@
 import type { LevelData } from './types';
 import { TileType } from './types';
 
-export const TILE_SIZE = 40; // in pixels
+export const VIEWPORT_HEIGHT_TILES = 14;
+export const VIEWPORT_WIDTH_TILES = 20;
+
+export const calculateTileSize = (isTouchDevice: boolean) => {
+  const availableHeight = window.innerHeight;
+  const availableWidth = window.innerWidth;
+
+  let contentHeight = availableHeight;
+  let contentWidth = availableWidth;
+
+  if (!isTouchDevice) {
+    // En escritorio, se reserva espacio para la cabecera y el pie de página.
+    const VERTICAL_UI_SPACE_PX = 160; 
+    const HORIZONTAL_UI_SPACE_PX = 64; 
+    contentHeight -= VERTICAL_UI_SPACE_PX;
+    contentWidth -= HORIZONTAL_UI_SPACE_PX;
+  }
+
+  const tileSizeFromHeight = contentHeight / VIEWPORT_HEIGHT_TILES;
+  const tileSizeFromWidth = contentWidth / VIEWPORT_WIDTH_TILES;
+  
+  // Se elige el tamaño de tile más pequeño para asegurar que todo el tablero encaje.
+  return Math.min(tileSizeFromHeight, tileSizeFromWidth);
+};
+
 
 // Todas las definiciones de niveles han sido movidas a archivos individuales
 // en la nueva carpeta /levels.
