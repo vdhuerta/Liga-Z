@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LIGA-Z: Aventura de Enteros</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    'vito-sky': '#6B7280',     // Cielo gris
+                    'vito-dirt-top': '#4a2c2a',// Tierra oscura (antes césped)
+                    'vito-dirt-base': '#6b463b',// Base de tierra
+                },
+                keyframes: {
+                    drift: {
+                        '0%': { transform: 'translateX(-150%)' },
+                        '100%': { transform: 'translateX(250%)' },
+                    },
+                    'drift-delay': {
+                        '0%': { transform: 'translateX(-250%)' },
+                        '100%': { transform: 'translateX(150%)' },
+                    },
+                    'pulse-yellow': {
+                        '0%, 100%': {
+                            borderColor: 'rgba(255, 216, 74, 0.4)',
+                            boxShadow: 'inset 0 0 8px rgba(255, 216, 74, 0.2)',
+                        },
+                        '50%': {
+                            borderColor: 'rgba(255, 216, 74, 1)',
+                            boxShadow: 'inset 0 0 12px rgba(255, 216, 74, 0.5)',
+                        },
+                    },
+                    'pulse-glow': {
+                        '0%, 100%': {
+                            boxShadow: '0 0 8px 1px #fef08a, inset 0 0 4px #eab308',
+                            opacity: 0.7,
+                        },
+                        '50%': {
+                            boxShadow: '0 0 16px 3px #fef08a, inset 0 0 8px #eab308',
+                            opacity: 1,
+                        },
+                    },
+                    'pulse-blue': {
+                        '0%, 100%': {
+                            borderColor: 'rgba(59, 130, 246, 0.4)',
+                            boxShadow: 'inset 0 0 10px rgba(59, 130, 246, 0.3)',
+                        },
+                        '50%': {
+                            borderColor: 'rgba(96, 165, 250, 1)',
+                            boxShadow: 'inset 0 0 16px rgba(96, 165, 250, 0.6)',
+                        },
+                    },
+                    'pulse-synth-core': {
+                        '0%, 100%': {
+                            boxShadow: 'inset 0 0 10px #60a5fa, 0 0 15px #60a5fa',
+                            backgroundColor: 'rgba(59, 130, 246, 0.4)',
+                        },
+                        '50%': {
+                            boxShadow: 'inset 0 0 20px #93c5fd, 0 0 30px #93c5fd',
+                            backgroundColor: 'rgba(96, 165, 250, 0.7)',
+                        },
+                    },
+                    'pulse-inverter': {
+                        '0%, 100%': {
+                            fill: '#a78bfa',
+                            stroke: '#6d28d9',
+                        },
+                        '50%': {
+                            fill: '#c4b5fd',
+                            stroke: '#8b5cf6',
+                        },
+                    },
+                    'pulse-pressure-plate': {
+                        '0%, 100%': {
+                            backgroundColor: 'rgba(31, 41, 55, 0.4)',
+                            boxShadow: 'inset 0 0 5px rgba(0,0,0,0.5)',
+                        },
+                        '50%': {
+                            backgroundColor: 'rgba(17, 24, 39, 0.7)',
+                            boxShadow: 'inset 0 0 15px rgba(0,0,0,0.8)',
+                        },
+                    },
+                    'pulse-loading': {
+                        '0%, 100%': { opacity: '0.6', textShadow: '1px 1px 2px #000' },
+                        '50%': { opacity: '1', textShadow: '1px 1px 5px #fef08a' },
+                    },
+                    'pulse-lava-rock': {
+                        '0%, 100%': { stroke: '#ff6b35', filter: 'drop-shadow(0 0 4px #ff6b35)' },
+                        '50%': { stroke: '#ffb44a', filter: 'drop-shadow(0 0 10px #ffb44a)' },
+                    },
+                    'pulse-lava-frame': {
+                        '0%, 100%': {
+                            borderColor: 'rgba(255, 107, 53, 0.8)',
+                            boxShadow: '0 0 15px rgba(255, 107, 53, 0.6), inset 0 0 8px rgba(201, 74, 26, 0.7)',
+                        },
+                        '50%': {
+                            borderColor: 'rgba(255, 180, 74, 1)',
+                            boxShadow: '0 0 25px rgba(255, 180, 74, 0.9), inset 0 0 14px rgba(255, 107, 53, 0.8)',
+                        },
+                    },
+                    'spin-slow': {
+                        'from': { transform: 'rotate(0deg)' },
+                        'to': { transform: 'rotate(360deg)' },
+                    },
+                    'zero-glow': {
+                        '0%, 100%': {
+                            transform: 'scale(1)',
+                            textShadow: '0 0 10px #fef08a, 0 0 20px #fef08a, 0 0 30px #eab308',
+                            opacity: 0.8,
+                          },
+                          '50%': {
+                            transform: 'scale(1.1)',
+                            textShadow: '0 0 20px #fef08a, 0 0 30px #fef08a, 0 0 40px #eab308',
+                            opacity: 1,
+                          }
+                    },
+                    'float-ice': {
+                        '0%': { transform: 'translateY(-20px) translateX(0px)', opacity: '0' },
+                        '10%': { opacity: '0.8' },
+                        '90%': { opacity: '0.8' },
+                        '100%': { transform: 'translateY(100vh) translateX(50px)', opacity: '0' },
+                    },
+                    'drip': {
+                        '0%': { transform: 'translateY(-20px)', opacity: '0' },
+                        '30%': { opacity: '1' },
+                        '80%': { opacity: '1' },
+                        '100%': { transform: 'translateY(10px)', opacity: '0' },
+                    },
+                    'pulse-deposit': {
+                        '0%, 100%': {
+                            borderColor: 'rgba(167, 139, 250, 0.5)',
+                            boxShadow: 'inset 0 0 10px rgba(167, 139, 250, 0.2), 0 0 10px rgba(167, 139, 250, 0.2)',
+                        },
+                        '50%': {
+                            borderColor: 'rgba(196, 181, 253, 1)',
+                            boxShadow: 'inset 0 0 20px rgba(196, 181, 253, 0.4), 0 0 20px rgba(196, 181, 253, 0.4)',
+                        },
+                    },
+                    'fireball-glow': {
+                        '0%, 100%': { filter: 'drop-shadow(0 0 6px #ff6b35)' },
+                        '50%': { filter: 'drop-shadow(0 0 14px #ff6b35)' }
+                    },
+                    'fade-out-up': {
+                        '0%': { transform: 'translateY(0) scale(1)', opacity: 1 },
+                        '100%': { transform: 'translateY(-20px) scale(0.5)', opacity: 0 },
+                    },
+                    'fade-in': {
+                        '0%': { opacity: 0 },
+                        '100%': { opacity: 1 },
+                    },
+                    'fly-to-center': {
+                        '0%': { transform: 'scale(1)', opacity: 1 },
+                        '100%': { top: '50%', left: '50%', transform: 'translate(-50%, -50%) scale(0)', opacity: 0 },
+                    },
+                    'sphere-pulse-chaotic': {
+                        '0%, 100%': {
+                            background: 'radial-gradient(circle, #f87171, #3b82f6, black 70%)',
+                            boxShadow: '0 0 20px #f87171, 0 0 40px #3b82f6',
+                            transform: 'scale(1)',
+                        },
+                        '50%': {
+                            background: 'radial-gradient(circle, #60a5fa, #ef4444, black 70%)',
+                            boxShadow: '0 0 30px #60a5fa, 0 0 60px #ef4444',
+                            transform: 'scale(1.1)',
+                        },
+                    },
+                    'sphere-pulse-harmonic': {
+                        '0%, 100%': {
+                            background: 'radial-gradient(circle, white, #fde047, rgba(0,0,0,0) 70%)',
+                            boxShadow: '0 0 30px white, 0 0 60px #fde047',
+                            transform: 'scale(1)',
+                        },
+                        '50%': {
+                            background: 'radial-gradient(circle, #fefce8, #facc15, rgba(0,0,0,0) 70%)',
+                            boxShadow: '0 0 45px white, 0 0 90px #facc15',
+                            transform: 'scale(1.1)',
+                        },
+                    },
+                    'final-zero-glow': {
+                        '0%': { opacity: 0, transform: 'scale(0.5)' },
+                        '50%': {
+                            opacity: 1,
+                            transform: 'scale(1.2)',
+                            textShadow: '0 0 20px #fff, 0 0 40px #fde047, 0 0 60px #fde047',
+                        },
+                        '100%': {
+                            opacity: 1,
+                            transform: 'scale(1)',
+                            textShadow: '0 0 10px #fff, 0 0 20px #fde047, 0 0 30px #fde047',
+                        },
+                    }
+                },
+                animation: {
+                    drift: 'drift 80s linear infinite',
+                    'drift-delay': 'drift-delay 120s linear infinite',
+                    'pulse-yellow': 'pulse-yellow 2s infinite',
+                    'pulse-glow': 'pulse-glow 2s infinite ease-in-out',
+                    'pulse-blue': 'pulse-blue 2s infinite',
+                    'pulse-synth-core': 'pulse-synth-core 2s infinite ease-in-out',
+                    'pulse-inverter': 'pulse-inverter 3s infinite ease-in-out',
+                    'pulse-pressure-plate': 'pulse-pressure-plate 3s infinite ease-in-out',
+                    'pulse-loading': 'pulse-loading 1.5s infinite ease-in-out',
+                    'pulse-lava-rock': 'pulse-lava-rock 2s infinite ease-in-out',
+                    'pulse-lava-frame': 'pulse-lava-frame 2.5s ease-in-out infinite',
+                    'spin-slow': 'spin-slow 5s linear infinite',
+                    'zero-glow': 'zero-glow 3s ease-in-out',
+                    'drip': 'drip 2s ease-out infinite',
+                    'pulse-deposit': 'pulse-deposit 2s infinite ease-in-out',
+                    'fireball-glow': 'fireball-glow 1.5s infinite ease-in-out',
+                    'fade-out-up': 'fade-out-up 1s ease-out forwards',
+                    'fade-in': 'fade-in 1s ease-in',
+                    'fly-to-center': 'fly-to-center 2s ease-in forwards',
+                    'sphere-pulse-chaotic': 'sphere-pulse-chaotic 4s infinite ease-in-out',
+                    'sphere-pulse-harmonic': 'sphere-pulse-harmonic 4s infinite ease-in-out',
+                    'final-zero-glow': 'final-zero-glow 4s ease-out forwards',
+                }
+            }
+        }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.1.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
+    "react/": "https://aistudiocdn.com/react@^19.1.1/"
+  }
+}
+</script>
+<style>
+    :root {
+      --ink: #101018;
+      --blue: #2f8cff;
+      --red: #ff4a4a;
+      --metal: #cfd6e6;
+      --metal-2: #aeb7cc;
+      --accent: #ffd84a;
+    }
+
+    .pixel { shape-rendering: crispEdges; }
+    .stroke { stroke: var(--ink); stroke-width: 4; }
+    .gloss { opacity:.25 }
+
+    .tile-floor {
+      background: linear-gradient(160deg, #0c4a6e, #38bdf8); /* sky-900 to sky-400 */
+      border: 1px solid #075985; /* sky-800 */
+      box-shadow: inset 1px 1px 8px rgba(255, 255, 255, 0.15);
+      box-sizing: border-box;
+    }
+
+    .font-arcade {
+      font-family: 'Press Start 2P', cursive;
+    }
+
+    .slot-base {
+        box-sizing: border-box;
+        background: rgba(0,0,0,0.2);
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+    }
+    .slot-empty {
+        animation: pulse-yellow 2s infinite;
+        border: 2px solid rgba(255, 216, 74, 0.4);
+    }
+    .slot-correct {
+        box-shadow: inset 0 0 15px 5px #22c55e, 0 0 10px #22c55e;
+        border: 2px solid #a7f3d0;
+        background: rgba(34, 197, 94, 0.2);
+    }
+    .slot-incorrect {
+        box-shadow: inset 0 0 15px 5px #ef4444, 0 0 10px #ef4444;
+        border: 2px solid #fca5a5;
+        background: rgba(239, 68, 68, 0.2);
+    }
+    .level-container {
+        transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out, margin-top 0.5s ease-in-out;
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        margin-top: 0;
+    }
+    .level-container.expanded {
+        max-height: 500px; /* A large enough value */
+        opacity: 1;
+        margin-top: 1.5rem; /* 24px */
+    }
+    /* Estilos de la barra de scroll para el modal de ayuda */
+    .help-modal-content::-webkit-scrollbar {
+        width: 12px;
+    }
+    .help-modal-content::-webkit-scrollbar-track {
+        background: #0c1a1e;
+        border-radius: 10px;
+    }
+    .help-modal-content::-webkit-scrollbar-thumb {
+        background-color: #a78bfa;
+        border-radius: 10px;
+        border: 3px solid #0c1a1e;
+    }
+</style>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="bg-[#1a0f0f] text-white overflow-hidden">
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

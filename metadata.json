@@ -1,0 +1,5 @@
+{
+  "name": "LIGA-Z: Aventura de Enteros",
+  "description": "Un juego de puzzle de vista cenital donde el héroe, ZETA, resuelve acertijos de números enteros moviendo cubos de hielo (positivos) y lava (negativos) para despejar laberintos. Cuando un cubo positivo y uno negativo del mismo valor se juntan, se evaporan.",
+  "requestFramePermissions": []
+}
