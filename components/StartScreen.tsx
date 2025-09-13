@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import GameBackground from './GameBackground';
 import ArcadeButton from './ArcadeButton';
 import GeneralHelpModal from './GeneralHelpModal';
@@ -66,7 +66,7 @@ const StartScreen: React.FC<StartScreenProps> = ({ onSelectEpisode }) => {
           ))}
         </div>
         
-        <div className="mt-8">
+        <div className="mt-8 flex items-center justify-center gap-4">
           <ArcadeButton onClick={() => setIsHelpOpen(true)} color="gray" size="md">
             Ayuda
           </ArcadeButton>

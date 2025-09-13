@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import GameBoard from './components/GameBoard';
 import Modal from './components/Modal';
@@ -38,7 +37,7 @@ const UnmuteIcon: React.FC = () => (
 
 const StatusBar: React.FC<{ lives: number; score: number; levelTitle: string; onHelp: () => void; levelIndex: number; isMuted: boolean; onToggleMute: () => void; }> = ({ lives, score, levelTitle, onHelp, levelIndex, isMuted, onToggleMute }) => {
   return (
-    <div className="text-white p-1 md:p-2 border-t-4 border-purple-500 font-arcade text-[7px] md:text-sm">
+    <div className="text-white p-1 md:p-2 border-t-4 border-purple-500 font-arcade text-[7px] md:text-sm h-[30%] md:h-auto">
       <div className="flex justify-between items-center gap-4">
         <div className="flex gap-4">
           <span>VIDAS: <span className="text-yellow-400">{lives}</span></span>
@@ -117,6 +116,7 @@ const App: React.FC = () => {
   // State for touch controls and responsive layout
   const [isTouch, setIsTouch] = useState(false);
   const [tileSize, setTileSize] = useState(() => calculateTileSize(isTouchDevice()));
+  const [isFullscreen, setIsFullscreen] = useState(false);
   
   // State for panning
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
@@ -157,6 +157,36 @@ const App: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const handleFullscreenChange = useCallback(() => {
+    const isFs = !!(document.fullscreenElement || (document as any).webkitFullscreenElement);
+    setIsFullscreen(isFs);
+  }, []);
+
+  const toggleFullscreen = useCallback(() => {
+      const element = document.documentElement as any;
+      if (!document.fullscreenElement && !(document as any).webkitFullscreenElement) {
+          if (element.requestFullscreen) {
+              element.requestFullscreen();
+          } else if (element.webkitRequestFullscreen) { // Safari
+              element.webkitRequestFullscreen();
+          }
+      } else {
+          if (document.exitFullscreen) {
+              document.exitFullscreen();
+          } else if ((document as any).webkitExitFullscreen) { // Safari
+              (document as any).webkitExitFullscreen();
+          }
+      }
+  }, []);
+
+  useEffect(() => {
+      document.addEventListener('fullscreenchange', handleFullscreenChange);
+      document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+      return () => {
+          document.removeEventListener('fullscreenchange', handleFullscreenChange);
+          document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      };
+  }, [handleFullscreenChange]);
 
   useEffect(() => {
     soundManager.preload();
@@ -1785,14 +1815,32 @@ Cond Col 5 < 0 ✅`;
           <h1 className="font-arcade text-base text-white text-center flex-grow" style={{ textShadow: '2px 2px #000' }}>
             {level.shortTitle}
           </h1>
-          <ArcadeButton
-            onClick={() => setCurrentScene('start')}
-            color="purple"
-            size="sm"
-            className="w-24"
-          >
-            Volver
-          </ArcadeButton>
+          <div className="flex flex-col items-center">
+            <ArcadeButton
+              onClick={() => setCurrentScene('start')}
+              color="purple"
+              size="sm"
+              className="w-24"
+            >
+              Volver
+            </ArcadeButton>
+            {isTouch && (
+              <button
+                onClick={toggleFullscreen}
+                className="mt-2 p-1 bg-black/50 rounded-full border-2 border-purple-500 hover:bg-purple-900/50 transition-colors"
+                aria-label={isFullscreen ? 'Salir de pantalla completa' : 'Entrar a pantalla completa'}
+              >
+                <img
+                  src={isFullscreen
+                    ? 'https://raw.githubusercontent.com/vdhuerta/assets-aplications/main/Z_SalirPantallaCompleta.png'
+                    : 'https://raw.githubusercontent.com/vdhuerta/assets-aplications/main/Z_PantallaCompleta.png'
+                  }
+                  alt={isFullscreen ? 'Salir Pantalla Completa' : 'Entrar Pantalla Completa'}
+                  className="w-10 h-10 object-contain"
+                />
+              </button>
+            )}
+          </div>
         </header>
         <div className="flex-grow flex items-center justify-center p-4 pt-0 overflow-hidden">
           <div className="relative">
@@ -1916,7 +1964,7 @@ Cond Col 5 < 0 ✅`;
         </div>
         
         <div className="w-full flex-shrink-0 bg-black">
-          <div className="relative text-center p-2 font-arcade text-[7px] md:text-sm h-7 md:h-10 flex items-center justify-center">
+          <div className="relative text-center p-2 font-arcade text-[7px] md:text-sm h-[70%] md:h-10 flex items-center justify-center">
             <LavaBurstEffect key={feedbackMessage + currentObjective} />
             <span className="relative z-10">
               {feedbackMessage ? (
