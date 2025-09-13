@@ -29,9 +29,9 @@ const TouchControls: React.FC<TouchControlsProps> = ({ onMove, onAction }) => {
   const dPadSize = 'clamp(8rem, 25vmin, 10rem)';
 
   return (
-    <>
-      {/* Action Button (Left) */}
-      <div className="fixed left-4 sm:left-6 md:left-8 top-1/2 -translate-y-1/2 z-30">
+    <div className="fixed inset-0 flex justify-between items-center p-4 sm:p-6 md:p-8 z-[49] pointer-events-none">
+      {/* Action Button Wrapper */}
+      <div className="pointer-events-auto">
         <button
           className="bg-red-600/75 rounded-full flex items-center justify-center border-4 border-red-800/90 active:bg-red-500/90 transition-colors"
           style={{ width: actionButtonSize, height: actionButtonSize }}
@@ -44,9 +44,9 @@ const TouchControls: React.FC<TouchControlsProps> = ({ onMove, onAction }) => {
         </button>
       </div>
 
-      {/* D-Pad (Right) - New cross layout */}
+      {/* D-Pad Wrapper */}
       <div
-        className="fixed right-4 sm:right-6 md:right-8 top-1/2 -translate-y-1/2 z-30 relative"
+        className="relative pointer-events-auto"
         style={{ width: dPadSize, height: dPadSize }}
       >
         <button
@@ -78,7 +78,7 @@ const TouchControls: React.FC<TouchControlsProps> = ({ onMove, onAction }) => {
           <ArrowIcon rotation={90} />
         </button>
       </div>
-    </>
+    </div>
   );
 };
 
