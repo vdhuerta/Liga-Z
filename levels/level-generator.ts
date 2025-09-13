@@ -166,6 +166,28 @@ export function crearPuzzle(
 
   const excludedSet = new Set(excludedPositions.map(p => `${p.row},${p.col}`));
 
+  // REGLA 2: Añadir zona de exclusión alrededor de la meta si estamos en la sala final.
+  if (salaIndex === 0) {
+    let goalPos: Position | null = null;
+    for (let c = 0; c < ANCHO_SALA; c++) {
+        // La plantilla siempre coloca la meta en la fila 0.
+        if (newGrid[0][c] === TileType.GOAL) {
+            goalPos = { row: 0, col: c };
+            break;
+        }
+    }
+    if (goalPos) {
+        // Proteger un área de 3x3 delante de la entrada de la meta.
+        for (let dr = 1; dr <= 3; dr++) { // Filas 1, 2, 3
+            for (let dc = -1; dc <= 1; dc++) {
+                const r = goalPos.row + dr;
+                const c = goalPos.col + dc;
+                excludedSet.add(`${r},${c}`);
+            }
+        }
+    }
+  }
+
   const pentominoKeys = ['F', 'I', 'L', 'N', 'P', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
   const selectedKeys: string[] = [];
   while(selectedKeys.length < 4) {
@@ -198,6 +220,7 @@ export function crearPuzzle(
           let isValid = true;
           const pointsToPlace: {r: number, c: number}[] = [];
 
+          // Primero, verificar si la forma encaja en el grid sin tocar exclusiones.
           for (const [dr, dc] of shape) {
             const r = row + dr;
             const c = col + dc;
@@ -206,40 +229,59 @@ export function crearPuzzle(
             if (r < roomBounds.top || r >= roomBounds.bottom ||
                 c < roomBounds.left || c >= roomBounds.right ||
                 newGrid[r]?.[c] !== TileType.FLOOR ||
-                excludedSet.has(`${r},${c}`)) { // Check against excluded positions
+                excludedSet.has(`${r},${c}`)) {
                 isValid = false;
                 break;
             }
           }
 
-          if (isValid) {
-              pointsToPlace.forEach(p => newGrid[p.r][p.c] = TileType.WALL);
+          if (!isValid) continue;
 
-              let firstEmpty: {r: number, c: number} | null = null;
-              for (let r = roomBounds.top; r < roomBounds.bottom; r++) {
-                  for (let c = roomBounds.left; c < roomBounds.right; c++) {
-                      if (newGrid[r][c] === TileType.FLOOR) {
-                          firstEmpty = {r, c};
-                          break;
-                      }
+          // REGLA 1: Verificar que la forma no toque ninguna roca existente.
+          const pointsToPlaceSet = new Set(pointsToPlace.map(p => `${p.r},${p.c}`));
+          const neighbors = [[-1,-1], [-1,0], [-1,1], [0,-1], [0,1], [1,-1], [1,0], [1,1]];
+          for (const point of pointsToPlace) {
+            for (const [dr, dc] of neighbors) {
+                const nr = point.r + dr;
+                const nc = point.c + dc;
+                // Si el vecino es una roca y no es parte de la forma actual.
+                if (newGrid[nr]?.[nc] === TileType.WALL && !pointsToPlaceSet.has(`${nr},${nc}`)) {
+                    isValid = false;
+                    break;
+                }
+            }
+            if (!isValid) break;
+          }
+          
+          if (!isValid) continue;
+          
+          // Si es válido, probar si el mapa sigue siendo solucionable.
+          pointsToPlace.forEach(p => newGrid[p.r][p.c] = TileType.WALL);
+
+          let firstEmpty: {r: number, c: number} | null = null;
+          for (let r = roomBounds.top; r < roomBounds.bottom; r++) {
+              for (let c = roomBounds.left; c < roomBounds.right; c++) {
+                  if (newGrid[r][c] === TileType.FLOOR) {
+                      firstEmpty = {r, c};
+                      break;
                   }
-                  if (firstEmpty) break;
               }
-              
-              const currentEmptySpaces = totalEmptySpaces - shape.length;
-              if (firstEmpty) {
-                  const reachableSpaces = floodFill(newGrid, firstEmpty.r, firstEmpty.c, roomBounds);
-                  if (reachableSpaces >= currentEmptySpaces - 2) { // Allow for some unreachable spaces
-                      placed = true;
-                      totalEmptySpaces = currentEmptySpaces;
-                  }
-              } else if (currentEmptySpaces === 0) {
+              if (firstEmpty) break;
+          }
+          
+          const currentEmptySpaces = totalEmptySpaces - shape.length;
+          if (firstEmpty) {
+              const reachableSpaces = floodFill(newGrid, firstEmpty.r, firstEmpty.c, roomBounds);
+              if (reachableSpaces >= currentEmptySpaces - 2) { // Allow for some unreachable spaces
                   placed = true;
+                  totalEmptySpaces = currentEmptySpaces;
               }
+          } else if (currentEmptySpaces === 0) {
+              placed = true;
+          }
 
-              if (!placed) {
-                  pointsToPlace.forEach(p => newGrid[p.r][p.c] = TileType.FLOOR);
-              }
+          if (!placed) { // Si no se pudo colocar, revertir los cambios.
+              pointsToPlace.forEach(p => newGrid[p.r][p.c] = TileType.FLOOR);
           }
       }
   }
