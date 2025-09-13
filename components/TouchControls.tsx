@@ -9,7 +9,7 @@ interface TouchControlsProps {
 const ArrowIcon: React.FC<{ rotation: number }> = ({ rotation }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    className="h-8 w-8 text-white"
+    className="h-2/3 w-2/3 text-white" // Made responsive
     fill="none"
     viewBox="0 0 24 24"
     stroke="currentColor"
@@ -28,43 +28,47 @@ const TouchControls: React.FC<TouchControlsProps> = ({ onMove, onAction }) => {
   return (
     <>
       {/* Action Button (Left) */}
-      <div className="fixed left-4 top-1/2 -translate-y-1/2 z-30">
+      <div className="fixed left-4 sm:left-6 md:left-8 top-1/2 -translate-y-1/2 z-30">
         <button
-          className="w-24 h-24 bg-red-600/75 rounded-full flex items-center justify-center border-4 border-red-800/90 active:bg-red-500/90"
+          className="bg-red-600/75 rounded-full flex items-center justify-center border-4 border-red-800/90 active:bg-red-500/90 transition-colors"
+          style={{ width: 'clamp(5rem, 18vmin, 6.5rem)', height: 'clamp(5rem, 18vmin, 6.5rem)' }} // Responsive size
           onTouchStart={(e) => handleTouch(e, onAction)}
           aria-label="Acción de Rebote"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-1/2 w-1/2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l-5 2 1-6z" />
           </svg>
         </button>
       </div>
 
       {/* D-Pad (Right) */}
-      <div className="fixed right-4 top-1/2 -translate-y-1/2 z-30 grid grid-cols-3 grid-rows-3 w-40 h-40">
+      <div
+        className="fixed right-4 sm:right-6 md:right-8 top-1/2 -translate-y-1/2 z-30 grid grid-cols-3 grid-rows-3"
+        style={{ width: 'clamp(8rem, 30vmin, 11rem)', height: 'clamp(8rem, 30vmin, 11rem)' }} // Responsive size
+      >
         <button
-          className="col-start-2 row-start-1 bg-gray-800/75 rounded-t-lg active:bg-gray-700/90"
+          className="col-start-2 row-start-1 bg-gray-800/75 rounded-t-lg active:bg-gray-700/90 flex items-center justify-center"
           onTouchStart={(e) => handleTouch(e, () => onMove('up'))}
           aria-label="Mover hacia arriba"
         >
           <ArrowIcon rotation={0} />
         </button>
         <button
-          className="col-start-1 row-start-2 bg-gray-800/75 rounded-l-lg active:bg-gray-700/90"
+          className="col-start-1 row-start-2 bg-gray-800/75 rounded-l-lg active:bg-gray-700/90 flex items-center justify-center"
           onTouchStart={(e) => handleTouch(e, () => onMove('left'))}
           aria-label="Mover hacia la izquierda"
         >
           <ArrowIcon rotation={-90} />
         </button>
         <button
-          className="col-start-3 row-start-2 bg-gray-800/75 rounded-r-lg active:bg-gray-700/90"
+          className="col-start-3 row-start-2 bg-gray-800/75 rounded-r-lg active:bg-gray-700/90 flex items-center justify-center"
           onTouchStart={(e) => handleTouch(e, () => onMove('right'))}
           aria-label="Mover hacia la derecha"
         >
           <ArrowIcon rotation={90} />
         </button>
         <button
-          className="col-start-2 row-start-3 bg-gray-800/75 rounded-b-lg active:bg-gray-700/90"
+          className="col-start-2 row-start-3 bg-gray-800/75 rounded-b-lg active:bg-gray-700/90 flex items-center justify-center"
           onTouchStart={(e) => handleTouch(e, () => onMove('down'))}
           aria-label="Mover hacia abajo"
         >

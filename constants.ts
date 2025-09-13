@@ -11,19 +11,18 @@ export const calculateTileSize = (isTouchDevice: boolean) => {
   let contentHeight = availableHeight;
   let contentWidth = availableWidth;
 
-  if (!isTouchDevice) {
-    // En escritorio, se reserva espacio para la cabecera y el pie de página.
-    const VERTICAL_UI_SPACE_PX = 160; 
-    const HORIZONTAL_UI_SPACE_PX = 64; 
-    contentHeight -= VERTICAL_UI_SPACE_PX;
-    contentWidth -= HORIZONTAL_UI_SPACE_PX;
-  }
+  // Se reserva espacio para la UI de la app (cabecera/pie) y la UI del navegador (barra de direcciones).
+  // Se aplica a todos los dispositivos para una experiencia consistente.
+  const VERTICAL_UI_SPACE_PX = 160; 
+  const HORIZONTAL_UI_SPACE_PX = 64; 
+  contentHeight -= VERTICAL_UI_SPACE_PX;
+  contentWidth -= HORIZONTAL_UI_SPACE_PX;
 
   const tileSizeFromHeight = contentHeight / VIEWPORT_HEIGHT_TILES;
   const tileSizeFromWidth = contentWidth / VIEWPORT_WIDTH_TILES;
   
-  // Se elige el tamaño de tile más pequeño para asegurar que todo el tablero encaje.
-  return Math.min(tileSizeFromHeight, tileSizeFromWidth);
+  // Se elige el tamaño de tile más pequeño y se asegura un mínimo para evitar errores.
+  return Math.max(10, Math.min(tileSizeFromHeight, tileSizeFromWidth));
 };
 
 
