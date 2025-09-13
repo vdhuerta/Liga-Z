@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Modal from './Modal';
 import { KeyIcon } from './Key';
 import { soundManager } from './soundManager';
+import TouchControls from './TouchControls';
+import type { Direction } from '../types';
 
 // --- START: COMPONENTS COPIED FROM StoryIntro.tsx FOR TRANSITION ---
 
@@ -321,8 +323,13 @@ const IceCavern: React.FC<IceCavernProps> = ({ onComplete }) => {
     const [zetaVisible, setZetaVisible] = useState(false);
     const [zetaX, setZetaX] = useState(window.innerWidth - 130);
     const [facingDirection, setFacingDirection] = useState<'left' | 'right'>('left');
+    const [isTouch, setIsTouch] = useState(false);
     
     const onCompleteRef = React.useRef(onComplete);
+
+    useEffect(() => {
+        setIsTouch('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    }, []);
 
     useEffect(() => {
         if (sceneState === 'transitioning') {
@@ -353,35 +360,45 @@ const IceCavern: React.FC<IceCavernProps> = ({ onComplete }) => {
         }
     }, [sceneState]);
 
-    const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    const handleMove = useCallback((direction: 'left' | 'right') => {
         if (sceneState !== 'exploring') return;
-
         const moveSpeed = 20;
-        let newX = zetaX;
-        switch (e.key) {
-            case 'ArrowLeft':
-                newX = Math.max(0, zetaX - moveSpeed);
-                setFacingDirection('left');
-                break;
-            case 'ArrowRight':
-                newX = Math.min(window.innerWidth - 80, zetaX + moveSpeed);
-                setFacingDirection('right');
-                break;
-        }
-        setZetaX(newX);
+        setFacingDirection(direction);
+        setZetaX(x => {
+            if (direction === 'left') return Math.max(0, x - moveSpeed);
+            return Math.min(window.innerWidth - 80, x + moveSpeed);
+        });
+    }, [sceneState]);
 
-        const questionMarkX = window.innerWidth / 2;
-        const zetaCenterX = newX + 40;
-        if (Math.abs(zetaCenterX - questionMarkX) < 40) {
-            soundManager.play('collectPrize');
-            setSceneState('modal');
+    const handleKeyDown = useCallback((e: KeyboardEvent) => {
+        switch (e.key) {
+            case 'ArrowLeft': handleMove('left'); break;
+            case 'ArrowRight': handleMove('right'); break;
         }
-    }, [sceneState, zetaX]);
+    }, [handleMove]);
+    
+    const handleTouchMove = useCallback((direction: Direction) => {
+        if (direction === 'left' || direction === 'right') {
+            handleMove(direction);
+        }
+    }, [handleMove]);
 
     useEffect(() => {
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [handleKeyDown]);
+
+    // Effect to check for key proximity
+    useEffect(() => {
+        if (sceneState !== 'exploring') return;
+        const keyX = window.innerWidth / 2;
+        const zetaCenterX = zetaX + 40; // center of the 80px zeta sprite
+        if (Math.abs(zetaCenterX - keyX) < 40) {
+            soundManager.play('collectPrize');
+            setSceneState('modal');
+        }
+    }, [zetaX, sceneState]);
+
 
     const handleModalClose = () => {
         soundManager.play('modalClose');
@@ -435,6 +452,10 @@ const IceCavern: React.FC<IceCavernProps> = ({ onComplete }) => {
                     </div>
                 </div>
             </div>
+            
+            {isTouch && sceneState === 'exploring' && (
+                 <TouchControls onMove={handleTouchMove} onAction={() => {}} />
+            )}
 
             {sceneState === 'modal' && (
                 <Modal
@@ -444,7 +465,7 @@ const IceCavern: React.FC<IceCavernProps> = ({ onComplete }) => {
                 >
                     <div className="text-left text-base space-y-2">
                         <p>¡Hola, soy ZETA! Mi misión es restaurar el equilibrio en la Torre de Enteros.</p>
-                        <p>Usa las <strong className="text-yellow-300">flechas</strong> para moverte. ¡Párate junto a un cubo y pulsa <strong className="text-yellow-300">ESPACIO</strong> para empujarlo!</p>
+                        <p>Usa las <strong className="text-yellow-300">flechas</strong> o los <strong className="text-yellow-300">controles táctiles</strong> para moverte. Párate junto a un cubo y pulsa una flecha en su dirección para empujarlo.</p>
                         <p>Junta un cubo de <strong className="text-red-400">lava (+)</strong> con uno de <strong className="text-blue-400">hielo (-)</strong> del mismo valor para que se neutralicen y desaparezcan.</p>
                         <p>¡Despeja todos los cubos para avanzar! ¡Contamos contigo!</p>
                     </div>
