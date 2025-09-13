@@ -1,6 +1,7 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { soundManager } from './soundManager';
+import TouchControls from './TouchControls';
+import type { Direction } from '../types';
 
 // --- COMPONENTES SVG DE AYUDA ---
 
@@ -230,6 +231,32 @@ const StoryIntro: React.FC<StoryIntroProps> = ({ onComplete }) => {
     const [isDoorOpen, setIsDoorOpen] = useState(false);
     const [isZetaVisible, setIsZetaVisible] = useState(true);
     const [isInteractionDisabled, setIsInteractionDisabled] = useState(false);
+    const [isTouch, setIsTouch] = useState(false);
+
+    useEffect(() => {
+        setIsTouch('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    }, []);
+
+    const enterElevator = useCallback(() => {
+        soundManager.play('laserDoorOpen');
+        setIsInteractionDisabled(true);
+        setTimeout(() => setIsDoorOpen(true), 200);      // Abrir puerta
+        setTimeout(() => setIsZetaVisible(false), 1400); // ZETA desaparece
+        setTimeout(onComplete, 2200);                     // Transición al juego
+    }, [onComplete]);
+
+    const handleInteraction = useCallback(() => {
+        const doorWidth = 60;
+        const activationWidth = doorWidth;
+        const buildingWidth = 200;
+        const doorStart = window.innerWidth - buildingWidth + (buildingWidth - activationWidth) / 2;
+        const doorEnd = doorStart + activationWidth;
+        const zetaWidth = 80;
+
+        if ((zetaX + zetaWidth) > doorStart && zetaX < doorEnd) {
+            enterElevator();
+        }
+    }, [zetaX, enterElevator]);
 
     const handleKeyDown = useCallback((e: KeyboardEvent) => {
         if (showStory || isInteractionDisabled) return;
@@ -241,32 +268,32 @@ const StoryIntro: React.FC<StoryIntroProps> = ({ onComplete }) => {
                 setFacingDirection('left');
                 break;
             case 'ArrowRight':
-                // El límite es el borde de la pantalla menos el ancho de ZETA
                 setZetaX(x => Math.min(window.innerWidth - 80, x + moveSpeed));
                 setFacingDirection('right');
                 break;
-            case ' ': // Barra espaciadora
+            case ' ':
                 e.preventDefault();
-                // Zona de activación de la puerta del ascensor
-                const doorWidth = 60;
-                // La zona de activación coincide con el ancho de la puerta.
-                const activationWidth = doorWidth;
-                const buildingWidth = 200;
-                const doorStart = window.innerWidth - buildingWidth + (buildingWidth - activationWidth) / 2;
-                const doorEnd = doorStart + activationWidth;
-                const zetaWidth = 80;
-
-                // Comprueba si ZETA se superpone con la puerta del ascensor
-                if ((zetaX + zetaWidth) > doorStart && zetaX < doorEnd) {
-                    soundManager.play('laserDoorOpen');
-                    setIsInteractionDisabled(true);
-                    setTimeout(() => setIsDoorOpen(true), 200);      // Abrir puerta
-                    setTimeout(() => setIsZetaVisible(false), 1400); // ZETA desaparece
-                    setTimeout(onComplete, 2200);                     // Transición al juego
-                }
+                handleInteraction();
                 break;
         }
-    }, [zetaX, isInteractionDisabled, onComplete, showStory]);
+    }, [isInteractionDisabled, showStory, handleInteraction]);
+
+    const handleTouchMove = useCallback((direction: Direction) => {
+        if (showStory || isInteractionDisabled) return;
+        const moveSpeed = 20;
+        switch (direction) {
+            case 'left':
+                setZetaX(x => Math.max(0, x - moveSpeed));
+                setFacingDirection('left');
+                break;
+            case 'right':
+                setZetaX(x => Math.min(window.innerWidth - 80, x + moveSpeed));
+                setFacingDirection('right');
+                break;
+            default:
+                break;
+        }
+    }, [showStory, isInteractionDisabled]);
 
     useEffect(() => {
         window.addEventListener('keydown', handleKeyDown);
@@ -324,6 +351,10 @@ const StoryIntro: React.FC<StoryIntroProps> = ({ onComplete }) => {
             >
                 <ZetaSideRight />
             </div>
+            
+            {isTouch && !showStory && !isInteractionDisabled && (
+                <TouchControls onMove={handleTouchMove} onAction={handleInteraction} />
+            )}
         </div>
     );
 };
