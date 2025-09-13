@@ -1809,7 +1809,7 @@ Cond Col 5 < 0 ✅`;
   return (
     <div className="min-h-screen font-sans">
       <div className="fixed inset-0 z-0"><GameBackground /></div>
-      <main className="relative z-10 min-h-screen flex flex-col font-sans">
+      <main className={`relative z-10 min-h-screen flex flex-col font-sans ${isTouch ? 'justify-center' : ''}`}>
         <header className="relative w-full p-4 flex justify-between items-center z-20">
           <div className="w-24"></div> {/* Spacer */}
           <h1 className="font-arcade text-base text-white text-center flex-grow" style={{ textShadow: '2px 2px #000' }}>
@@ -1827,7 +1827,7 @@ Cond Col 5 < 0 ✅`;
             {isTouch && (
               <button
                 onClick={toggleFullscreen}
-                className="mt-2 p-1 bg-black/50 rounded-full border-2 border-purple-500 hover:bg-purple-900/50 transition-colors"
+                className="mt-2 p-1 bg-black/50 rounded-lg border-2 border-purple-500 hover:bg-purple-900/50 transition-colors"
                 aria-label={isFullscreen ? 'Salir de pantalla completa' : 'Entrar a pantalla completa'}
               >
                 <img
@@ -1842,7 +1842,7 @@ Cond Col 5 < 0 ✅`;
             )}
           </div>
         </header>
-        <div className="flex-grow flex items-center justify-center p-4 pt-0 overflow-hidden">
+        <div className={`flex items-center justify-center overflow-hidden ${isTouch ? 'px-4 pb-2 pt-0' : 'flex-grow p-4 pt-0'}`}>
           <div className="relative">
              {isTouch && <TouchControls onMove={handleTouchMove} onAction={handleInteraction} />}
             <div 
