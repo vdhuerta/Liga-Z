@@ -1,5 +1,6 @@
 
 
+
 import React from 'react';
 import type { Cube as CubeData } from '../types';
 
@@ -135,7 +136,7 @@ const Cube: React.FC<CubeProps> = ({ data, isRevealed, tileSize }) => {
           {getCubeIcon()}
         </div>
         <span
-          className="relative text-xl font-bold text-white"
+          className="relative font-bold text-white text-[7px] md:text-xl"
           style={{ textShadow: '0px 0px 5px black, 0px 0px 5px black' }}
         >
           {(isRevealed || !isMemory) && (value > 0 ? `+${value}` : value)}

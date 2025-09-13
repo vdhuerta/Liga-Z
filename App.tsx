@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import GameBoard from './components/GameBoard';
 import Modal from './components/Modal';
@@ -37,7 +38,7 @@ const UnmuteIcon: React.FC = () => (
 
 const StatusBar: React.FC<{ lives: number; score: number; levelTitle: string; onHelp: () => void; levelIndex: number; isMuted: boolean; onToggleMute: () => void; }> = ({ lives, score, levelTitle, onHelp, levelIndex, isMuted, onToggleMute }) => {
   return (
-    <div className="text-white p-2 border-t-4 border-purple-500 font-arcade text-sm">
+    <div className="text-white p-1 md:p-2 border-t-4 border-purple-500 font-arcade text-[7px] md:text-sm">
       <div className="flex justify-between items-center gap-4">
         <div className="flex gap-4">
           <span>VIDAS: <span className="text-yellow-400">{lives}</span></span>
@@ -1915,7 +1916,7 @@ Cond Col 5 < 0 ✅`;
         </div>
         
         <div className="w-full flex-shrink-0 bg-black">
-          <div className="relative text-center p-2 font-arcade text-sm h-10 flex items-center justify-center">
+          <div className="relative text-center p-2 font-arcade text-[7px] md:text-sm h-7 md:h-10 flex items-center justify-center">
             <LavaBurstEffect key={feedbackMessage + currentObjective} />
             <span className="relative z-10">
               {feedbackMessage ? (

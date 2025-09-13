@@ -1,3 +1,4 @@
+
 import type { LevelData } from './types';
 import { TileType } from './types';
 
@@ -11,10 +12,13 @@ export const calculateTileSize = (isTouchDevice: boolean) => {
   let contentHeight = availableHeight;
   let contentWidth = availableWidth;
 
+  // Detect mobile phones by screen width to apply specific UI spacing.
+  const isMobilePhone = availableWidth < 768;
+
   // Se reserva espacio para la UI de la app (cabecera/pie) y la UI del navegador (barra de direcciones).
-  // Se aplica a todos los dispositivos para una experiencia consistente.
-  const VERTICAL_UI_SPACE_PX = 210; 
-  const HORIZONTAL_UI_SPACE_PX = 64; 
+  // Se reduce el espacio en móviles para agrandar el área de juego.
+  const VERTICAL_UI_SPACE_PX = isMobilePhone ? 100 : 210; 
+  const HORIZONTAL_UI_SPACE_PX = isMobilePhone ? 16 : 64; 
   contentHeight -= VERTICAL_UI_SPACE_PX;
   contentWidth -= HORIZONTAL_UI_SPACE_PX;
 
