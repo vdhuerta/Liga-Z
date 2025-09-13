@@ -306,24 +306,24 @@ const StoryIntro: React.FC<StoryIntroProps> = ({ onComplete }) => {
         <div className="fixed inset-0 font-sans">
              {showStory && (
                 <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-                    <div className="bg-[#0c1a1e] border-4 border-yellow-400 rounded-lg p-6 max-w-2xl w-full text-white font-arcade shadow-2xl animate-fade-in">
-                        <h2 className="text-2xl text-yellow-300 mb-4 text-center" style={{ textShadow: '2px 2px #000' }}>
+                    <div className="bg-[#0c1a1e] border-4 border-yellow-400 rounded-lg p-4 sm:p-6 max-w-2xl w-full text-white font-arcade shadow-2xl animate-fade-in max-h-[85vh] flex flex-col">
+                        <h2 className="text-xl sm:text-2xl text-yellow-300 mb-4 text-center flex-shrink-0" style={{ textShadow: '2px 2px #000' }}>
                             PRÓLOGO: LA TORRE DE ENTEROS
                         </h2>
-                        <div className="text-sm space-y-3 leading-relaxed text-gray-300">
+                        <div className="text-xs sm:text-sm space-y-3 leading-relaxed text-gray-300 overflow-y-auto pr-2 flex-grow help-modal-content">
                             <p>En el principio, solo existía la energía de <span className="text-red-400">LAVA [+]</span>, surgida de la necesidad de crear y añadir. Pero este poder ilimitado pronto reveló una limitación crucial: no podía representar el equilibrio.</p>
                             <p>¿Cómo se registraría la ausencia, la anulación, o el acto de deshacer?</p>
                             <p>Para completar el universo, se crearon las energías opuestas: el <span className="text-blue-400">HIELO [-]</span> y el gran <span className="text-yellow-200">CERO [0]</span>, el punto de equilibrio absoluto. Esto permitió que operaciones antes 'imposibles' como 'LAVA [+3] - LAVA [+5]' tuvieran una solución: HIELO [-2].</p>
                             <p>La Torre de Enteros, nuestra 'mesa de juego', ahora se extiende en ambas direcciones desde el CERO. Tu misión como ZETA es mantener este equilibrio.</p>
                         </div>
-                        <div className="text-center mt-6">
-                             <p className="text-xs text-gray-400 mb-2">(PD: Presiona barra espaciadora para abrir el ascensor)</p>
+                        <div className="text-center mt-4 flex-shrink-0">
+                             <p className="text-[10px] sm:text-xs text-gray-400 mb-2">(PD: Presiona barra espaciadora o el botón de acción para interactuar)</p>
                              <button
                                  onClick={() => {
                                     soundManager.play('buttonClick');
                                     setShowStory(false)}
                                  }
-                                 className="font-arcade text-lg bg-purple-600 text-white py-2 px-6 rounded-lg border-b-4 border-purple-800 hover:bg-purple-500 active:border-b-0 active:translate-y-1 transition-all"
+                                 className="font-arcade text-base sm:text-lg bg-purple-600 text-white py-2 px-6 rounded-lg border-b-4 border-purple-800 hover:bg-purple-500 active:border-b-0 active:translate-y-1 transition-all"
                              >
                                  Continuar
                              </button>

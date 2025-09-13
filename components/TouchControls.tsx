@@ -25,8 +25,8 @@ const TouchControls: React.FC<TouchControlsProps> = ({ onMove, onAction }) => {
     action();
   };
 
-  const actionButtonSize = 'clamp(6rem, 20vmin, 7.5rem)';
-  const dPadSize = 'clamp(9rem, 35vmin, 12rem)';
+  const actionButtonSize = 'clamp(4.5rem, 15vmin, 6rem)';
+  const dPadSize = 'clamp(8rem, 25vmin, 10rem)';
 
   return (
     <>
