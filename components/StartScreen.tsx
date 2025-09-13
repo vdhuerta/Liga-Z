@@ -24,14 +24,14 @@ const StartScreen: React.FC<StartScreenProps> = ({ onSelectEpisode }) => {
         <GameBackground />
       </div>
       <div className="relative z-10 text-center w-full max-w-2xl">
-        <h1 className="font-arcade text-6xl md:text-8xl text-yellow-300" style={{ textShadow: '4px 4px 0px #000, 0 0 20px #eab308' }}>
+        <h1 className="font-arcade text-5xl sm:text-6xl md:text-8xl text-yellow-300" style={{ textShadow: '4px 4px 0px #000, 0 0 20px #eab308' }}>
           LIGA-Z
         </h1>
-        <h2 className="font-arcade text-lg md:text-2xl mt-4 text-white" style={{ textShadow: '2px 2px 0px #000' }}>
+        <h2 className="font-arcade text-base sm:text-lg md:text-2xl mt-2 md:mt-4 text-white" style={{ textShadow: '2px 2px 0px #000' }}>
           Aventura de Enteros
         </h2>
 
-        <div className="mt-16 w-full flex flex-col items-center gap-4">
+        <div className="mt-10 md:mt-16 w-full flex flex-col items-center gap-4">
           {EPISODES.map((episode, index) => (
             <div key={episode.name} className="w-full">
               <ArcadeButton 

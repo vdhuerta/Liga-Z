@@ -117,6 +117,12 @@ const App: React.FC = () => {
   const [isTouch, setIsTouch] = useState(false);
   const [tileSize, setTileSize] = useState(() => calculateTileSize(isTouchDevice()));
   
+  // State for panning
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const panStartRef = useRef({ x: 0, y: 0 });
+  const panOffsetAtStartRef = useRef({ x: 0, y: 0 });
+
   const nextCubeId = useRef(1000); // Start high to avoid collision with level-defined IDs
   const rockSpawnInterval = useRef<number | null>(null);
   const spawnRockFnRef = useRef<(() => void) | null>(null);
@@ -218,6 +224,7 @@ const App: React.FC = () => {
     setConvertingCubeIds(new Set());
     setFireballs([]);
     setGameOverMessage('');
+    setPanOffset({ x: 0, y: 0 }); // Reset pan on level change
 
     // Reset transition states
     setPreppingTransition(false);
@@ -466,7 +473,7 @@ Cond Col 5 < 0 ✅`;
   }, [handleRebound, playerPosition, secretDoorPositions]);
 
   const handleTouchMove = useCallback((direction: Direction) => {
-    if (currentScene !== 'game' || gameState !== 'playing' || isHelpModalOpen || isTransitioning || preppingTransition || showEpisodeWelcome) return;
+    if (currentScene !== 'game' || gameState !== 'playing' || isHelpModalOpen || isTransitioning || preppingTransition || showEpisodeWelcome || isPanning) return;
     setFacingDirection(direction);
     switch (direction) {
       case 'up': handlePlayerMove(-1, 0); break;
@@ -474,10 +481,10 @@ Cond Col 5 < 0 ✅`;
       case 'left': handlePlayerMove(0, -1); break;
       case 'right': handlePlayerMove(0, 1); break;
     }
-  }, [currentScene, gameState, handlePlayerMove, isHelpModalOpen, isTransitioning, preppingTransition, showEpisodeWelcome]);
+  }, [currentScene, gameState, handlePlayerMove, isHelpModalOpen, isTransitioning, preppingTransition, showEpisodeWelcome, isPanning]);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (currentScene !== 'game' || gameState !== 'playing' || isHelpModalOpen || isTransitioning || preppingTransition || showEpisodeWelcome) return;
+    if (currentScene !== 'game' || gameState !== 'playing' || isHelpModalOpen || isTransitioning || preppingTransition || showEpisodeWelcome || isPanning) return;
 
     let direction: Direction | null = null;
     switch (e.key) {
@@ -489,7 +496,7 @@ Cond Col 5 < 0 ✅`;
       default: return;
     }
     if (direction) setFacingDirection(direction);
-  }, [currentScene, gameState, handlePlayerMove, handleInteraction, isHelpModalOpen, isTransitioning, preppingTransition, showEpisodeWelcome]);
+  }, [currentScene, gameState, handlePlayerMove, handleInteraction, isHelpModalOpen, isTransitioning, preppingTransition, showEpisodeWelcome, isPanning]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
@@ -1612,29 +1619,56 @@ Cond Col 5 < 0 ✅`;
   const viewportPixelHeight = VIEWPORT_HEIGHT_TILES * tileSize;
   const viewportPixelWidth = VIEWPORT_WIDTH_TILES * tileSize;
   
-  /**
-   * Calcula la posición del tablero de juego para centrar la cámara en el jugador.
-   * La cámara siempre sigue al jugador con un ligero sesgo vertical para mostrar
-   * más del camino por delante, garantizando una vista estable y sin movimientos
-   * cinemáticos inesperados.
-   */
-  const calculateBoardStyle = (pPos: Position, lvl: LevelData) => {
-    const focusPosition = pPos;
+  const handlePanStart = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length !== 1 || !isTouch) return;
+    panStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    panOffsetAtStartRef.current = panOffset;
+    setIsPanning(true);
+  }, [isTouch, panOffset]);
+
+  const handlePanMove = useCallback((e: React.TouchEvent) => {
+    if (!isPanning || e.touches.length !== 1) return;
+    const dx = e.touches[0].clientX - panStartRef.current.x;
+    const dy = e.touches[0].clientY - panStartRef.current.y;
+    setPanOffset({
+        x: panOffsetAtStartRef.current.x + dx,
+        y: panOffsetAtStartRef.current.y + dy,
+    });
+  }, [isPanning]);
+
+  const handlePanEnd = useCallback(() => {
+    setIsPanning(false);
+  }, []);
+
+  const calculateBoardStyle = useCallback((pPos: Position, lvl: LevelData) => {
     const boardPixelHeight = lvl.grid.length * tileSize;
     const boardPixelWidth = lvl.grid[0].length * tileSize;
     
-    const verticalOffset = (viewportPixelHeight * 2 / 3);
-    const cameraY = focusPosition.row * tileSize - verticalOffset;
-    
-    const clampedCameraY = Math.max(0, Math.min(cameraY, boardPixelHeight - viewportPixelHeight));
-    const cameraX = focusPosition.col * tileSize - (viewportPixelWidth / 2);
-    const clampedCameraX = Math.max(0, Math.min(cameraX, boardPixelWidth - viewportPixelWidth));
-    const boardXOffset = Math.max(0, (viewportPixelWidth - boardPixelWidth) / 2);
+    const cameraY = pPos.row * tileSize - (viewportPixelHeight * 2 / 3);
+    const cameraX = pPos.col * tileSize - (viewportPixelWidth / 2);
 
+    let translateX = -cameraX + panOffset.x;
+    let translateY = -cameraY + panOffset.y;
+
+    if (boardPixelWidth < viewportPixelWidth) {
+        translateX = (viewportPixelWidth - boardPixelWidth) / 2;
+    } else {
+        translateX = Math.min(0, translateX);
+        translateX = Math.max(viewportPixelWidth - boardPixelWidth, translateX);
+    }
+
+    if (boardPixelHeight < viewportPixelHeight) {
+        translateY = (viewportPixelHeight - boardPixelHeight) / 2;
+    } else {
+        translateY = Math.min(0, translateY);
+        translateY = Math.max(viewportPixelHeight - boardPixelHeight, translateY);
+    }
+    
     return {
-      transform: `translate(${boardXOffset - clampedCameraX}px, -${clampedCameraY}px)`,
+      transform: `translate(${translateX}px, ${translateY}px)`,
+      transition: isPanning ? 'none' : 'transform 0.1s ease-in-out',
     };
-  };
+  }, [tileSize, viewportPixelHeight, viewportPixelWidth, panOffset, isPanning]);
 
   const assemblerOverlays = useMemo(() => {
     // Only show this overlay for the final level (index 11)
@@ -1762,7 +1796,13 @@ Cond Col 5 < 0 ✅`;
         <div className="flex-grow flex items-center justify-center p-4 pt-0 overflow-hidden">
           <div className="relative">
              {isTouch && <TouchControls onMove={handleTouchMove} onAction={handleInteraction} />}
-            <div className="border-4 border-purple-500 rounded-lg shadow-2xl overflow-hidden relative" style={{ height: viewportPixelHeight, width: viewportPixelWidth }}>
+            <div 
+              className="border-4 border-purple-500 rounded-lg shadow-2xl overflow-hidden relative" 
+              style={{ height: viewportPixelHeight, width: viewportPixelWidth }}
+              onTouchStart={handlePanStart}
+              onTouchMove={handlePanMove}
+              onTouchEnd={handlePanEnd}
+            >
               {assemblerOverlays}
               {hintMessage && (
                   <div 
@@ -1777,8 +1817,8 @@ Cond Col 5 < 0 ✅`;
                 {/* Current Level Board */}
                 <div key={currentLevelIndex} style={{
                   position: 'absolute', top: 0, left: 0,
-                  transition: 'transform 0.1s ease-in-out',
-                  transform: `${calculateBoardStyle(playerPosition, level).transform} translateY(${isTransitioning ? '100%' : '0%'})`
+                  transform: `${calculateBoardStyle(playerPosition, level).transform}`,
+                  transition: isTransitioning ? 'none' : 'transform 0.1s ease-in-out',
                 }}>
                   <GameBoard 
                     level={level} 

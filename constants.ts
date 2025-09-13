@@ -13,7 +13,7 @@ export const calculateTileSize = (isTouchDevice: boolean) => {
 
   // Se reserva espacio para la UI de la app (cabecera/pie) y la UI del navegador (barra de direcciones).
   // Se aplica a todos los dispositivos para una experiencia consistente.
-  const VERTICAL_UI_SPACE_PX = 160; 
+  const VERTICAL_UI_SPACE_PX = 210; 
   const HORIZONTAL_UI_SPACE_PX = 64; 
   contentHeight -= VERTICAL_UI_SPACE_PX;
   contentWidth -= HORIZONTAL_UI_SPACE_PX;
