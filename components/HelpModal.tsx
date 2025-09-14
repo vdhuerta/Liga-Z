@@ -1,3 +1,4 @@
+
 import React from 'react';
 import Modal from './Modal';
 import { soundManager } from './soundManager';
@@ -96,6 +97,7 @@ const Level3_1Help: React.FC = () => (
 
 const Level3_2Help: React.FC = () => (
     <div className="text-left text-base space-y-2">
+        <p className="text-red-400">¡CUIDADO! Bolas de fuego incandescentes caerán desde arriba. ¡Esquívalas o perderás una vida!</p>
         <p>¡Bienvenido a la Bóveda de Unidades! Aquí, los cubos no tienen valor... ¡tú se lo das!</p>
         <p>Usa los <strong className="text-yellow-300">Dispensadores</strong> en las paredes para generar cubos de <strong className="text-red-400">[+1]</strong> y <strong className="text-blue-400">[-1]</strong>.</p>
         <p>Tu objetivo es colocar cubos en el <strong className="text-purple-400">Depósito Numérico</strong> hasta que la suma total sea igual al número objetivo que se muestra en la pantalla.</p>

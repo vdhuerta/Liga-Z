@@ -1028,34 +1028,44 @@ Cond Col 5 < 0 ✅`;
         }
     };
 
-    // Global timer for radioactive rock spawning
+    // Global timer for radioactive rock spawning with progressive difficulty
     useEffect(() => {
+        // Always clear the previous timer when dependencies change
+        if (rockSpawnInterval.current) {
+            clearInterval(rockSpawnInterval.current);
+            rockSpawnInterval.current = null;
+        }
+
         const isRadioactiveLevel = [6, 7, 8].includes(currentLevelIndex);
 
         if (isRadioactiveLevel && gameState === 'playing' && currentScene === 'game') {
-            // Start a continuous interval that isn't tied to room changes.
+            let spawnDelay;
+            switch (levelPhase) {
+                case 1:
+                    spawnDelay = 8000; // 8 seconds
+                    break;
+                case 2:
+                    spawnDelay = 6500; // 6.5 seconds
+                    break;
+                case 3:
+                default:
+                    spawnDelay = 5000; // 5 seconds
+                    break;
+            }
+            
             rockSpawnInterval.current = setInterval(() => {
-                // The spawn function already knows to only spawn in the player's current room.
                 spawnRockFnRef.current?.();
-            }, 8000); // Rocks every 8 seconds, globally.
-
-            // Cleanup function to stop the timer when the level ends or component unmounts.
-            return () => {
-                if (rockSpawnInterval.current) {
-                    clearInterval(rockSpawnInterval.current);
-                    rockSpawnInterval.current = null;
-                }
-            };
+            }, spawnDelay);
         }
 
-        // If it's not a radioactive level or not playing, ensure the timer is cleared.
+        // Return a cleanup function that will run on unmount or when dependencies change again.
         return () => {
             if (rockSpawnInterval.current) {
                 clearInterval(rockSpawnInterval.current);
                 rockSpawnInterval.current = null;
             }
         };
-    }, [currentLevelIndex, gameState, currentScene]);
+    }, [currentLevelIndex, gameState, currentScene, levelPhase]);
 
     const handleRockLanded = useCallback((rockId: number) => {
         const rock = interactiveRocks.find(r => r.id === rockId);
@@ -1499,7 +1509,8 @@ Cond Col 5 < 0 ✅`;
 
   // E3-N3 Fireball Spawning
   useEffect(() => {
-      if ((currentLevelIndex !== 10 && currentLevelIndex !== 11) || gameState !== 'playing' || currentScene !== 'game') {
+      const fireballLevels = [9, 10, 11]; // Levels 3-2, 3-3, 3-4
+      if (!fireballLevels.includes(currentLevelIndex) || gameState !== 'playing' || currentScene !== 'game') {
           setFireballs([]); // Clear fireballs when not on the level or not playing
           return;
       }
@@ -1535,9 +1546,10 @@ Cond Col 5 < 0 ✅`;
   // E3-N3 Fireball Animation & Collision
   useEffect(() => {
     const FIREBALL_SPEED = 4.8; // pixels per frame
+    const fireballLevels = [9, 10, 11]; // Levels 3-2, 3-3, 3-4
 
     const loop = () => {
-        if (gameState !== 'playing' || (currentLevelIndex !== 10 && currentLevelIndex !== 11) || currentScene !== 'game') {
+        if (gameState !== 'playing' || !fireballLevels.includes(currentLevelIndex) || currentScene !== 'game') {
             gameLoopRef.current = requestAnimationFrame(loop);
             return;
         }
