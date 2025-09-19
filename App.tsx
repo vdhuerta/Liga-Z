@@ -1032,7 +1032,8 @@ Cond Col 5 < 0 ✅`;
     useEffect(() => {
         // Always clear the previous timer when dependencies change
         if (rockSpawnInterval.current) {
-            clearInterval(rockSpawnInterval.current);
+            // FIX: Use window.clearInterval to ensure the browser API is used, which expects a number.
+            window.clearInterval(rockSpawnInterval.current);
             rockSpawnInterval.current = null;
         }
 
@@ -1053,7 +1054,8 @@ Cond Col 5 < 0 ✅`;
                     break;
             }
             
-            rockSpawnInterval.current = setInterval(() => {
+            // FIX: Use window.setInterval to ensure the browser API is used, returning a number.
+            rockSpawnInterval.current = window.setInterval(() => {
                 spawnRockFnRef.current?.();
             }, spawnDelay);
         }
@@ -1061,7 +1063,8 @@ Cond Col 5 < 0 ✅`;
         // Return a cleanup function that will run on unmount or when dependencies change again.
         return () => {
             if (rockSpawnInterval.current) {
-                clearInterval(rockSpawnInterval.current);
+                // FIX: Use window.clearInterval to ensure the browser API is used, which expects a number.
+                window.clearInterval(rockSpawnInterval.current);
                 rockSpawnInterval.current = null;
             }
         };
@@ -1822,36 +1825,35 @@ Cond Col 5 < 0 ✅`;
     <div className="min-h-screen font-sans">
       <div className="fixed inset-0 z-0"><GameBackground /></div>
       <main className={`relative z-10 min-h-screen flex flex-col font-sans ${isTouch ? 'justify-center' : ''}`}>
+        {isTouch && (
+            <button
+                onClick={toggleFullscreen}
+                className="absolute top-4 right-4 z-50 p-1 bg-black/50 rounded-lg border-2 border-purple-500 hover:bg-purple-900/50 transition-colors"
+                aria-label={isFullscreen ? 'Salir de pantalla completa' : 'Entrar a pantalla completa'}
+            >
+                <img
+                    src={isFullscreen
+                        ? 'https://raw.githubusercontent.com/vdhuerta/assets-aplications/main/Z_SalirPantallaCompleta.png'
+                        : 'https://raw.githubusercontent.com/vdhuerta/assets-aplications/main/Z_PantallaCompleta.png'
+                    }
+                    alt={isFullscreen ? 'Salir Pantalla Completa' : 'Entrar Pantalla Completa'}
+                    className="w-10 h-10 object-contain"
+                />
+            </button>
+        )}
         <header className="relative w-full p-4 flex justify-between items-center z-20">
           <div className="w-24"></div> {/* Spacer */}
           <h1 className="font-arcade text-base text-white text-center flex-grow" style={{ textShadow: '2px 2px #000' }}>
             {level.shortTitle}
           </h1>
-          <div className="flex flex-col items-center">
+          <div className="w-24 flex justify-center items-center">
             <ArcadeButton
               onClick={() => setCurrentScene('start')}
               color="purple"
               size="sm"
-              className="w-24"
             >
               Volver
             </ArcadeButton>
-            {isTouch && (
-              <button
-                onClick={toggleFullscreen}
-                className="mt-2 p-1 bg-black/50 rounded-lg border-2 border-purple-500 hover:bg-purple-900/50 transition-colors"
-                aria-label={isFullscreen ? 'Salir de pantalla completa' : 'Entrar a pantalla completa'}
-              >
-                <img
-                  src={isFullscreen
-                    ? 'https://raw.githubusercontent.com/vdhuerta/assets-aplications/main/Z_SalirPantallaCompleta.png'
-                    : 'https://raw.githubusercontent.com/vdhuerta/assets-aplications/main/Z_PantallaCompleta.png'
-                  }
-                  alt={isFullscreen ? 'Salir Pantalla Completa' : 'Entrar Pantalla Completa'}
-                  className="w-10 h-10 object-contain"
-                />
-              </button>
-            )}
           </div>
         </header>
         <div className={`flex items-center justify-center overflow-hidden ${isTouch ? 'px-4 pb-2 pt-0' : 'flex-grow p-4 pt-0'}`}>

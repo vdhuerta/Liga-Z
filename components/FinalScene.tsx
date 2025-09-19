@@ -141,8 +141,44 @@ const FinalScene: React.FC<FinalSceneProps> = ({ onComplete, tileSize }) => {
   const [isMessageVisible, setIsMessageVisible] = useState(false);
   const [isTypingComplete, setIsTypingComplete] = useState(false);
   const [isDoorOpen, setIsDoorOpen] = useState(false);
+  const [isTouch, setIsTouch] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   
   const finalMessage = "Has demostrado maestría sobre la dualidad. Has comprendido el Cero. El equilibrio ha sido restaurado";
+
+  const handleFullscreenChange = useCallback(() => {
+    const isFs = !!(document.fullscreenElement || (document as any).webkitFullscreenElement);
+    setIsFullscreen(isFs);
+  }, []);
+
+  const toggleFullscreen = useCallback(() => {
+    const element = document.documentElement as any;
+    if (!document.fullscreenElement && !(document as any).webkitFullscreenElement) {
+      if (element.requestFullscreen) {
+        element.requestFullscreen();
+      } else if (element.webkitRequestFullscreen) { // Safari
+        element.webkitRequestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if ((document as any).webkitExitFullscreen) { // Safari
+        (document as any).webkitExitFullscreen();
+      }
+    }
+  }, []);
+  
+  useEffect(() => {
+    const isTouchDevice = () => 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    setIsTouch(isTouchDevice());
+    
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+    };
+  }, [handleFullscreenChange]);
 
   // Controla la secuencia de eventos
   useEffect(() => {
@@ -207,6 +243,22 @@ const FinalScene: React.FC<FinalSceneProps> = ({ onComplete, tileSize }) => {
 
   return (
     <div className={`fixed inset-0 bg-gray-900 flex items-center justify-center font-arcade overflow-hidden`}>
+      {isTouch && (
+          <button
+              onClick={toggleFullscreen}
+              className="absolute top-4 right-4 z-50 p-1 bg-black/50 rounded-lg border-2 border-purple-500 hover:bg-purple-900/50 transition-colors"
+              aria-label={isFullscreen ? 'Salir de pantalla completa' : 'Entrar a pantalla completa'}
+          >
+              <img
+                  src={isFullscreen
+                      ? 'https://raw.githubusercontent.com/vdhuerta/assets-aplications/main/Z_SalirPantallaCompleta.png'
+                      : 'https://raw.githubusercontent.com/vdhuerta/assets-aplications/main/Z_PantallaCompleta.png'
+                  }
+                  alt={isFullscreen ? 'Salir Pantalla Completa' : 'Entrar Pantalla Completa'}
+                  className="w-10 h-10 object-contain"
+              />
+          </button>
+      )}
       {sequenceState >= SequenceState.COCKPIT_MESSAGE && <CockpitDisplay onMissionMessageComplete={() => setSequenceState(SequenceState.ZETA_WALK)} tileSize={tileSize} />}
       <div
           className="relative"

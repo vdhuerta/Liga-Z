@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import ArcadeButton from './ArcadeButton';
 import GameBackground from './GameBackground';
 
@@ -11,6 +11,44 @@ const VideoIntro: React.FC<VideoIntroProps> = ({ onComplete }) => {
   const videoUrl = 'https://raw.githubusercontent.com/vdhuerta/assets-aplications/main/La%20Aventura%20de%20Z.mp4';
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isMuted, setIsMuted] = useState(true);
+
+  // Fullscreen logic
+  const [isTouch, setIsTouch] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const handleFullscreenChange = useCallback(() => {
+    const isFs = !!(document.fullscreenElement || (document as any).webkitFullscreenElement);
+    setIsFullscreen(isFs);
+  }, []);
+
+  const toggleFullscreen = useCallback(() => {
+    const element = document.documentElement as any;
+    if (!document.fullscreenElement && !(document as any).webkitFullscreenElement) {
+      if (element.requestFullscreen) {
+        element.requestFullscreen();
+      } else if (element.webkitRequestFullscreen) { // Safari
+        element.webkitRequestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if ((document as any).webkitExitFullscreen) { // Safari
+        (document as any).webkitExitFullscreen();
+      }
+    }
+  }, []);
+  
+  useEffect(() => {
+    const isTouchDevice = () => 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    setIsTouch(isTouchDevice());
+    
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+    };
+  }, [handleFullscreenChange]);
 
   // Due to browser policies, autoplaying videos must start muted.
   // This function allows the user to unmute with a single interaction.
@@ -26,6 +64,22 @@ const VideoIntro: React.FC<VideoIntroProps> = ({ onComplete }) => {
       <div className="absolute inset-0 z-0">
         <GameBackground />
       </div>
+       {isTouch && (
+          <button
+              onClick={toggleFullscreen}
+              className="absolute top-4 right-4 z-50 p-1 bg-black/50 rounded-lg border-2 border-purple-500 hover:bg-purple-900/50 transition-colors"
+              aria-label={isFullscreen ? 'Salir de pantalla completa' : 'Entrar a pantalla completa'}
+          >
+              <img
+                  src={isFullscreen
+                      ? 'https://raw.githubusercontent.com/vdhuerta/assets-aplications/main/Z_SalirPantallaCompleta.png'
+                      : 'https://raw.githubusercontent.com/vdhuerta/assets-aplications/main/Z_PantallaCompleta.png'
+                  }
+                  alt={isFullscreen ? 'Salir Pantalla Completa' : 'Entrar Pantalla Completa'}
+                  className="w-10 h-10 object-contain"
+              />
+          </button>
+      )}
       <div className="relative z-10 w-full max-w-6xl p-2 border-4 rounded-xl animate-pulse-lava-frame bg-black">
         <video
           ref={videoRef}

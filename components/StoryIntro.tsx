@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { soundManager } from './soundManager';
 import TouchControls from './TouchControls';
@@ -232,10 +233,41 @@ const StoryIntro: React.FC<StoryIntroProps> = ({ onComplete }) => {
     const [isZetaVisible, setIsZetaVisible] = useState(true);
     const [isInteractionDisabled, setIsInteractionDisabled] = useState(false);
     const [isTouch, setIsTouch] = useState(false);
+    const [isFullscreen, setIsFullscreen] = useState(false);
 
-    useEffect(() => {
-        setIsTouch('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    const handleFullscreenChange = useCallback(() => {
+      const isFs = !!(document.fullscreenElement || (document as any).webkitFullscreenElement);
+      setIsFullscreen(isFs);
     }, []);
+  
+    const toggleFullscreen = useCallback(() => {
+      const element = document.documentElement as any;
+      if (!document.fullscreenElement && !(document as any).webkitFullscreenElement) {
+        if (element.requestFullscreen) {
+          element.requestFullscreen();
+        } else if (element.webkitRequestFullscreen) { // Safari
+          element.webkitRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if ((document as any).webkitExitFullscreen) { // Safari
+          (document as any).webkitExitFullscreen();
+        }
+      }
+    }, []);
+    
+    useEffect(() => {
+      const isTouchDevice = () => 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      setIsTouch(isTouchDevice());
+      
+      document.addEventListener('fullscreenchange', handleFullscreenChange);
+      document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+      return () => {
+        document.removeEventListener('fullscreenchange', handleFullscreenChange);
+        document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      };
+    }, [handleFullscreenChange]);
 
     const enterElevator = useCallback(() => {
         soundManager.play('laserDoorOpen');
@@ -304,6 +336,22 @@ const StoryIntro: React.FC<StoryIntroProps> = ({ onComplete }) => {
 
     return (
         <div className="fixed inset-0 font-sans">
+             {isTouch && (
+                <button
+                    onClick={toggleFullscreen}
+                    className="absolute top-4 right-4 z-50 p-1 bg-black/50 rounded-lg border-2 border-purple-500 hover:bg-purple-900/50 transition-colors"
+                    aria-label={isFullscreen ? 'Salir de pantalla completa' : 'Entrar a pantalla completa'}
+                >
+                    <img
+                        src={isFullscreen
+                            ? 'https://raw.githubusercontent.com/vdhuerta/assets-aplications/main/Z_SalirPantallaCompleta.png'
+                            : 'https://raw.githubusercontent.com/vdhuerta/assets-aplications/main/Z_PantallaCompleta.png'
+                        }
+                        alt={isFullscreen ? 'Salir Pantalla Completa' : 'Entrar Pantalla Completa'}
+                        className="w-10 h-10 object-contain"
+                    />
+                </button>
+            )}
              {showStory && (
                 <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
                     <div className="bg-[#0c1a1e] border-4 border-yellow-400 rounded-lg p-4 sm:p-6 max-w-2xl w-full text-white font-arcade shadow-2xl animate-fade-in max-h-[85vh] flex flex-col">

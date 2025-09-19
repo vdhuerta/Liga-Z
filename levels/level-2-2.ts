@@ -1,3 +1,4 @@
+
 import type { LevelData, Position, Cube, CubeType } from '../types';
 import { TileType } from '../types';
 import { crearPlantillaNivel, crearPuzzle } from './level-generator';
@@ -79,10 +80,10 @@ const logicLinks: NonNullable<LevelData['logicLinks']> = [];
 const cubes: Omit<Cube, 'status'>[] = [];
 let cubeIdCounter = 320;
 
-// --- SALA 1 (Abajo, salaIndex 2): 1 estación, 4 cubos ---
-const scannerS1 = encontrarPosicionesSeguras(2, 1, posicionesOcupadas, grid)[0] || { row: 35, col: 10 };
-grid[scannerS1.row][scannerS1.col] = SCANNER_PLATE;
-posicionesOcupadas.push(scannerS1);
+// --- SALA 1 (Abajo, salaIndex 2): 1 estación, 1 escáner, 4 cubos ---
+const scannersS1 = encontrarPosicionesSeguras(2, 1, posicionesOcupadas, grid);
+scannersS1.forEach(pos => grid[pos.row][pos.col] = SCANNER_PLATE);
+posicionesOcupadas.push(...scannersS1);
 
 const station_S1_Gt = placeComparisonStation(grid, 37, 10, COMPARISON_GT);
 logicLinks.push({ id: 's1_gt', operator: 'gt', slot_a_pos: station_S1_Gt.slot_a, slot_b_pos: station_S1_Gt.slot_b });
@@ -98,10 +99,10 @@ cubeDefsS1.forEach((def, i) => {
 });
 
 
-// --- SALA 2 (Medio, salaIndex 1): 2 estaciones, 6 cubos ---
-const scannerS2 = encontrarPosicionesSeguras(1, 1, posicionesOcupadas, grid)[0] || { row: 20, col: 10 };
-grid[scannerS2.row][scannerS2.col] = SCANNER_PLATE;
-posicionesOcupadas.push(scannerS2);
+// --- SALA 2 (Medio, salaIndex 1): 2 estaciones, 2 escáneres, 6 cubos ---
+const scannersS2 = encontrarPosicionesSeguras(1, 2, posicionesOcupadas, grid);
+scannersS2.forEach(pos => grid[pos.row][pos.col] = SCANNER_PLATE);
+posicionesOcupadas.push(...scannersS2);
 
 const station_S2_Lt = placeComparisonStation(grid, 22, 6, COMPARISON_LT);
 logicLinks.push({ id: 's2_lt', operator: 'lt', slot_a_pos: station_S2_Lt.slot_a, slot_b_pos: station_S2_Lt.slot_b });
@@ -121,10 +122,10 @@ cubeDefsS2.forEach((def, i) => {
 });
 
 
-// --- SALA 3 (Arriba, salaIndex 0): 3 estaciones, 8 cubos ---
-const scannerS3 = encontrarPosicionesSeguras(0, 1, posicionesOcupadas, grid)[0] || { row: 5, col: 10 };
-grid[scannerS3.row][scannerS3.col] = SCANNER_PLATE;
-posicionesOcupadas.push(scannerS3);
+// --- SALA 3 (Arriba, salaIndex 0): 3 estaciones, 3 escáneres, 8 cubos ---
+const scannersS3 = encontrarPosicionesSeguras(0, 3, posicionesOcupadas, grid);
+scannersS3.forEach(pos => grid[pos.row][pos.col] = SCANNER_PLATE);
+posicionesOcupadas.push(...scannersS3);
 
 const station_S3_Gt = placeComparisonStation(grid, 7, 4, COMPARISON_GT);
 logicLinks.push({ id: 's3_gt', operator: 'gt', slot_a_pos: station_S3_Gt.slot_a, slot_b_pos: station_S3_Gt.slot_b });
@@ -139,7 +140,10 @@ logicLinks.push({ id: 's3_eq', operator: 'eq', slot_a_pos: station_S3_Eq.slot_a,
 posicionesOcupadas.push(station_S3_Eq.slot_a, { row: 7, col: 16 }, station_S3_Eq.slot_b);
 
 const cubeDefsS3: { type: CubeType; value: number }[] = [
-    { type: 'lava', value: 10 }, { type: 'ice', value: -10 }, { type: 'lava', value: 7 }, { type: 'ice', value: -7 }, { type: 'lava', value: 2 }, { type: 'ice', value: -2 }, { type: 'lava', value: 4 }, { type: 'ice', value: -5 },
+    { type: 'lava', value: 10 }, { type: 'ice', value: -10 }, 
+    { type: 'lava', value: 7 }, { type: 'lava', value: 7 }, // Changed -7 to 7 to allow for equality puzzle
+    { type: 'lava', value: 2 }, { type: 'ice', value: -2 }, 
+    { type: 'lava', value: 4 }, { type: 'ice', value: -5 },
 ];
 const cubePosS3 = encontrarPosicionesSeguras(0, cubeDefsS3.length, posicionesOcupadas, grid);
 cubeDefsS3.forEach((def, i) => {

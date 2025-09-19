@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import ArcadeButton from './ArcadeButton';
 import GameBackground from './GameBackground';
 
@@ -9,8 +9,61 @@ interface WelcomeScreenProps {
 }
 
 const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onWatchVideo, onGoToGame }) => {
+  const [isTouch, setIsTouch] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const handleFullscreenChange = useCallback(() => {
+    const isFs = !!(document.fullscreenElement || (document as any).webkitFullscreenElement);
+    setIsFullscreen(isFs);
+  }, []);
+
+  const toggleFullscreen = useCallback(() => {
+    const element = document.documentElement as any;
+    if (!document.fullscreenElement && !(document as any).webkitFullscreenElement) {
+      if (element.requestFullscreen) {
+        element.requestFullscreen();
+      } else if (element.webkitRequestFullscreen) { // Safari
+        element.webkitRequestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if ((document as any).webkitExitFullscreen) { // Safari
+        (document as any).webkitExitFullscreen();
+      }
+    }
+  }, []);
+  
+  useEffect(() => {
+    const isTouchDevice = () => 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    setIsTouch(isTouchDevice());
+    
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+    };
+  }, [handleFullscreenChange]);
+
   return (
     <div className="relative min-h-screen w-full flex flex-col items-center justify-center font-sans text-white p-4">
+      {isTouch && (
+          <button
+              onClick={toggleFullscreen}
+              className="absolute top-4 right-4 z-50 p-1 bg-black/50 rounded-lg border-2 border-purple-500 hover:bg-purple-900/50 transition-colors"
+              aria-label={isFullscreen ? 'Salir de pantalla completa' : 'Entrar a pantalla completa'}
+          >
+              <img
+                  src={isFullscreen
+                      ? 'https://raw.githubusercontent.com/vdhuerta/assets-aplications/main/Z_SalirPantallaCompleta.png'
+                      : 'https://raw.githubusercontent.com/vdhuerta/assets-aplications/main/Z_PantallaCompleta.png'
+                  }
+                  alt={isFullscreen ? 'Salir Pantalla Completa' : 'Entrar Pantalla Completa'}
+                  className="w-10 h-10 object-contain"
+              />
+          </button>
+      )}
       <div className="absolute inset-0 z-0">
         <GameBackground />
       </div>
